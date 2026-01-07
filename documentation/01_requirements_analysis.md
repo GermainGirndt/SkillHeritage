@@ -16,9 +16,9 @@
 
 - The app must provide a **graphic user interface** for user interaction.
 - **Acceptance Criteria:**
-  1. The app can be installed and executed on Android Smartphones.
+  1. The app can be installed and executed on modern Android Smartphones.
 
-> 💬 _Why?_ The app provides an convenient form of interacting with the app and it's easier to make video and audio recordings with an in-build camera and microphone. 
+> 💬 _Why?_ The app provides an convenient form of interacting with the app and it's easier to make video and audio recordings with an in-build camera and microphone.
 
 ### MH-2 – Video Recording & Display
 
@@ -28,7 +28,7 @@
   2. The app can display loaded video recordings directly.
   3. The app should support following formats: MP4.
 
-> 💬 _Why?_ Making video recordings allows the worker to dokument his work process for enabling independent learning for new workers. 
+> 💬 _Why?_ Making video recordings allows the worker to dokument his work process for enabling independent learning for new workers.
 
 ---
 
@@ -43,43 +43,64 @@
 
 ---
 
-### MH-4 – Timestamps
+### MH-4 – Transcription Timestamps
 
-- The app must **generate timestamps with visulaization**.
+- The app must **generate and visualize timestamps** out of the transcripted text.
 - **Acceptance Criteria:**
   1. The app uses the **OpenAI API** for timestamp generation.
   2. The app extracts the MP3 audio track from the MP4 file and sends it to the API.
-  3. The app visualizes the timestamps. 
+  3. The app visualizes the timestamps.
+  4. If a timestamp is clicked, the video being currently reproduce should go to the selected timestamp.
 
 > 💬 _Why?_ Timestamps improve discoverability and make it easier for new workers to find relevant information.
 
 ---
+
 ### MH-5 – Semantic Search
 
-- The app must offer a **Semantic Search**.
+- The app must offer a **Semantic Search** for finding video tutorials.
 - **Acceptance Criteria:**
   1. The app uses the **OpenAI API** for semantic Search.
-  2. The app uses the transcription and the search string for semantic search.
+  2. The app calculates the best results out of the:
+     1. Transcription
+     2. Generated Structured Step-By-Step Manual, if available
   3. The app displays the top 5 results
 
 > 💬 _Why?_ Semantic search makes it easier for new workers to find relevant information.
 
+---
+
+### MH-6 – Usability [TODO]
+
+- The app should be **easy to use** and allow that even new users to effectively interact with it and archieve maximal performance.
+- **Acceptance Criteria:**
+  - Predictable behaviours
+  - Familiar patterns
+  - Synthesizability (Change is reflected)
+  - Generalizability [TODO]
+  - Consistency
+
+> 💬 _Why?_ Workers without extensive technological knowledge should be able to use the app without any problems.
 
 ---
 
 ## 💡 Should-Have Features
+
 ### SH-1 – Step-by-Step instructions
 
 - The app should generate a **Step-by-Step instruction**.
 - **Acceptance Criteria:**
-  1. The app uses the **OpenAI API** to generate the instructions. 
-  2. The app uses the transcription and sends it to the API.
+  1. The app uses the **OpenAI API** to generate the instructions.
+  2. The instructions should have pre-defined sections, common for the procedures, e.g.:
+     1. main topic
+     2. TLDR
+     3. necessary materials and tools
+     4. step-by-step procedure
+     5. troubleshooting/tips
 
 > 💬 _Why?_ Step-by-step instructions present all relevant information clearly in one place and make it easier for new workers to get started.
 
----
-
-### SH-2 – Maintainability
+### SH-2 – Documentation
 
 - The app should be **easy to maintain**.
 - **Acceptance Criteria:**
@@ -88,16 +109,6 @@
     - Dependency versions and configuration details
 
 > 💬 _Why?_ Good documentation ensures future contributors or students can reproduce and extend the system without configuration issues.
-
----
-### SH-3 – Usability
-
-- The app should be **easy to use**.
-- **Acceptance Criteria:**
-  - Tutorials:
-    - Show the Functionality
-
-> 💬 _Why?_ Workers without extensive technological knowledge should be able to use the app without any problems.
 
 ---
 
@@ -109,7 +120,7 @@
 - **Acceptance Criteria:**
   - Preprocessed data loads in under 2 seconds. (OpenAI API Calls excluded)
 
-> 💬 _Why?_ Quick loading times increases usability and causes less frustration. 
+> 💬 _Why?_ Quick loading times increases usability and causes less frustration.
 
 ---
 
