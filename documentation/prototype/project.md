@@ -22,3 +22,9 @@ Das Projekt soll sich auf den Usability-Aspekt “Learnability” fokussieren.
 2. Sollte sich die Bereitstellung der Punkte ‘ii” und ‘iii” seitens der Hochschule als zu aufwendig erweisen, stellt sich die Gruppe bereit, sich selbst darum zu kümmern.
 
 3. Die aktualisierte Präsentation mit der genauen Begründung für die benötigten Geräte und Technologien folgt im Anhang (siehe Kapitel „Devices and Technologies“, Seite 9).
+
+### Analyse
+
+- The primary action (record video) is visually dominant
+- Large record button communicates intent instantly
+- Similar to the Notes App
