@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillHeritage Prototype</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1E1E1E;
+            --primary: #0066FF;
+            --text-main: #FFFFFF;
+            --text-sec: #AAAAAA;
+            --accent-gold: #C5A065;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #app-frame {
+            width: 100%;
+            max-width: 400px;
+            height: 100%;
+            background: var(--bg-color);
+            position: relative;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid #333;
+            border-right: 1px solid #333;
+        }
+
+        .view {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .view.active { display: flex; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* HEADER */
+        .header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo { font-weight: bold; font-size: 18px; color: var(--accent-gold); }
+        .avatar { width: 40px; height: 40px; background: #555; border-radius: 50%; }
+
+        /* HOME SCREEN */
+        .search-box {
+            background: var(--card-bg);
+            margin: 0 20px 20px;
+            padding: 15px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-sec);
+        }
+
+        .section-title { padding: 0 20px 10px; font-size: 14px; color: var(--text-sec); text-transform: uppercase; }
+
+        .card-list { padding: 0 20px; overflow-y: auto; }
+        
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        .card:active { transform: scale(0.98); }
+        .card h3 { margin: 0 0 5px 0; font-size: 16px; }
+        .card p { margin: 0; font-size: 12px; color: var(--text-sec); }
+
+        .fab {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            cursor: pointer;
+        }
+
+        .camera-preview {
+            flex: 1;
+            background: #222;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #555;
+            flex-direction: column;
+        }
+        .rec-controls {
+            height: 150px;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        .rec-btn {
+            width: 70px;
+            height: 70px;
+            background: red;
+            border-radius: 50%;
+            border: 4px solid white;
+            cursor: pointer;
+        }
+        .back-btn {
+            position: absolute;
+            left: 20px;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .video-placeholder {
+            width: 100%;
+            height: 250px;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #444;
+        }
+
+        .tab-group {
+            display: flex;
+            background: var(--card-bg);
+            padding: 10px 20px 0 20px;
+            border-bottom: 1px solid #333;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            color: var(--text-sec);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            font-weight: 500;
+        }
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom: 3px solid var(--primary);
+        }
+
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            position: relative;
+        }
+        #view-timeline { display: block; }
+        
+        .progress-container {
+            padding: 20px;
+            background: var(--card-bg);
+            border-bottom: 1px solid #333;
+        }
+        .progress-info {
+            display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; font-size: 18px;
+        }
+        .timer { font-size: 14px; color: var(--text-sec); font-weight: normal; margin-top: 4px;}
+        .progress-track {
+            position: relative; width: 100%; height: 16px; background: #444; border-radius: 8px; cursor: pointer;
+        }
+        .progress-fill {
+            position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: var(--primary); border-radius: 8px; transition: width 0.3s ease;
+        }
+        .step-dot {
+            position: absolute; top: 50%; transform: translate(-50%, -50%); width: 8px; height: 8px; background: white; border-radius: 50%; z-index: 2; box-shadow: 0 0 2px rgba(0,0,0,0.5);
+        }
+        .steps-list { padding: 20px; }
+        .step-item {
+            display: flex; align-items: flex-start; margin-bottom: 20px; cursor: pointer; opacity: 0.5; transition: 0.2s;
+        }
+        .step-item.active { opacity: 1; }
+        .step-time { font-size: 12px; color: var(--text-sec); width: 40px; padding-top: 4px; }
+        .step-content { flex: 1; }
+        .step-title { font-weight: bold; margin-bottom: 4px; display: block; }
+        .step-desc { font-size: 13px; color: var(--text-sec); }
+
+        #view-manual { 
+            display: none; 
+            padding: 20px; 
+            background: var(--bg-color);
+        }
+        .manual-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .manual-h4 { color: var(--accent-gold); margin-top: 0; margin-bottom: 10px; }
+        .manual-list { padding-left: 20px; color: #ddd; font-size: 14px; line-height: 1.6; }
+        .ai-badge {
+            display: inline-block; background: #333; color: var(--primary); 
+            font-size: 10px; padding: 4px 8px; border-radius: 4px; margin-bottom: 15px;
+            border: 1px solid var(--primary);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="app-frame">
+        
+        <div id="view-home" class="view active">
+            <div class="header">
+                <div class="logo">SkillHeritage</div>
+                <div class="avatar"></div>
+            </div>
+            <div class="search-box">
+                <span>How to replace a filter...</span>
+                <span>🎤</span>
+            </div>
+            <div class="section-title">Recent Guides</div>
+            <div class="card-list">
+                <div class="card" onclick="goToPlayer()">
+                    <h3>Alternator Replacement</h3>
+                    <p>Audi A4 • Mehmet • 12 min</p>
+                </div>
+                <div class="card">
+                    <h3>Sensor Calibration</h3>
+                    <p>BMW X5 • Anna • 5 min</p>
+                </div>
+            </div>
+            <div class="fab" onclick="goToRecord()">+</div>
+        </div>
+
+        <div id="view-record" class="view">
+            <div class="camera-preview">
+                <h2>[CAMERA PREVIEW]</h2>
+                <p>Point phone at the engine</p>
+            </div>
+            <div class="rec-controls">
+                <div class="back-btn" onclick="goToHome()">✕</div>
+                <div class="rec-btn" onclick="simulateRecording()"></div>
+            </div>
+        </div>
+
+        <div id="view-player" class="view">
+            <div class="header" style="background: #000; padding: 10px 20px;">
+                <div class="back-btn" style="position:static; font-size:18px;" onclick="goToHome()">← Back</div>
+            </div>
+
+            <div class="video-placeholder">
+                ▶ VIDEO PLAYER
+            </div>
+
+            <div class="tab-group">
+                <div class="tab-btn active" id="tab-timeline" onclick="switchPlayerTab('timeline')">Video Timeline</div>
+                <div class="tab-btn" id="tab-manual" onclick="switchPlayerTab('manual')">Text Guide 📄</div>
+            </div>
+
+            <div class="content-area">
+                
+                <div id="view-timeline">
+                    <div class="progress-container">
+                        <div class="progress-info">
+                            <span id="current-step-label">Intro</span>
+                            <span class="timer" id="timer-display">00:00 / 10:00</span>
+                        </div>
+                        <div class="progress-track" onclick="alert('In the real app, this would scrub the video!')">
+                            <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
+                            <div class="step-dot" style="left: 0%;"></div>
+                            <div class="step-dot" style="left: 35%;"></div>
+                            <div class="step-dot" style="left: 75%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="steps-list">
+                        <div class="step-item active" id="step-0" onclick="activateStep(0, 0, 'Intro')">
+                            <div class="step-time">00:00</div>
+                            <div class="step-content">
+                                <span class="step-title">Intro & Preparation</span>
+                                <span class="step-desc">Open hood and prepare 10mm wrench.</span>
+                            </div>
+                        </div>
+                        <div class="step-item" id="step-1" onclick="activateStep(1, 35, 'Cover Removal')">
+                            <div class="step-time">03:30</div>
+                            <div class="step-content">
+                                <span class="step-title">Cover Removal</span>
+                                <span class="step-desc">Unscrew three bolts holding the plastic cover.</span>
+                            </div>
+                        </div>
+                        <div class="step-item" id="step-2" onclick="activateStep(2, 75, 'Part Extraction')">
+                            <div class="step-time">07:30</div>
+                            <div class="step-content">
+                                <span class="step-title">Part Extraction</span>
+                                <span class="step-desc">Gently pry the element and pull it upwards.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-manual">
+                    <div class="ai-badge">✨ Generated by AI from Video</div>
+                    
+                    <div class="manual-card">
+                        <h4 class="manual-h4">🛠 Tools Needed</h4>
+                        <ul class="manual-list">
+                            <li>10mm Socket Wrench</li>
+                            <li>Flathead Screwdriver</li>
+                            <li>Safety Gloves</li>
+                        </ul>
+                    </div>
+
+                    <div class="manual-card">
+                        <h4 class="manual-h4">📋 Step-by-Step Instructions</h4>
+                        <ol class="manual-list">
+                            <li><strong>Preparation:</strong> Ensure the engine is cold before starting. Disconnect negative battery terminal.</li>
+                            <li><strong>Cover Removal:</strong> Locate the 3 bolts on the engine cover. Use the 10mm wrench to remove them.</li>
+                            <li><strong>Extraction:</strong> The part is held by clips. Use the flathead screwdriver to gently release the pressure.</li>
+                            <li><strong>Installation:</strong> Place the new part in reverse order. Tighten bolts to 15 Nm.</li>
+                        </ol>
+                    </div>
+
+                    <div class="manual-card" style="border-left: 3px solid red;">
+                        <h4 class="manual-h4" style="color: #ff6b6b;">⚠️ Safety Notes</h4>
+                        <p style="color: #ddd; font-size: 14px;">Be careful with the hot manifold. Do not over-tighten the plastic screws.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function goToHome() { switchView('view-home'); }
+        function goToRecord() { switchView('view-record'); }
+        function goToPlayer() { 
+            switchView('view-player'); 
+            activateStep(0, 5, 'Intro');
+            switchPlayerTab('timeline'); // Default to timeline
+        }
+
+        function switchView(viewId) {
+            document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+        }
+
+        function simulateRecording() {
+            const btn = document.querySelector('.rec-btn');
+            btn.style.borderRadius = "4px"; 
+            btn.style.animation = "pulse 1s infinite";
+            setTimeout(() => {
+                alert("Recording finished! AI is generating Guide...");
+                goToPlayer();
+                btn.style.borderRadius = "50%";
+                btn.style.animation = "none";
+            }, 1500);
+        }
+
+        function switchPlayerTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('tab-' + tabName).classList.add('active');
+
+            const timelineView = document.getElementById('view-timeline');
+            const manualView = document.getElementById('view-manual');
+
+            if (tabName === 'timeline') {
+                timelineView.style.display = 'block';
+                manualView.style.display = 'none';
+            } else {
+                timelineView.style.display = 'none';
+                manualView.style.display = 'block';
+            }
+        }
+
+        function activateStep(stepIndex, progressPercent, title) {
+            document.getElementById('progress-fill').style.width = progressPercent + "%";
+            document.getElementById('current-step-label').innerText = title;
+            const simulatedTime = progressPercent === 0 ? "00:00" : "0" + Math.floor(progressPercent/10) + ":30";
+            document.getElementById('timer-display').innerText = simulatedTime + " / 10:00";
+            document.querySelectorAll('.step-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('step-' + stepIndex).classList.add('active');
+        }
+    </script>
+</body>
+</html>
