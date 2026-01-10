@@ -1,50 +1,71 @@
-# Welcome to your Expo app 👋
+# SkillHeritage – Mobile App (Expo)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+**Mobile frontend for the SkillHeritage project**, built with **Expo (React Native)**.  
+The app focuses on **video recording and playback** and is designed to work with a NestJS backend.
 
-## Get started
+---
 
-1. Install dependencies
+## Features
 
-   ```bash
-   npm install
-   ```
+- Video recording:
+  - Android (real device)
+  - Web (browser)
+- Video upload to backend
+- Video playback via streaming endpoint
+- Prepared UI for future AI transcription & instruction search
 
-2. Start the app
+---
 
-   ```bash
-   npx expo start
-   ```
+## Tech Stack
 
-In the output, you'll find options to open the app in a
+- **Expo / React Native**
+- **expo-router**
+- **expo-camera**
+- **expo-av**
+- **NestJS backend**
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+---
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Requirements
 
-## Get a fresh project
+Make sure you have installed:
 
-When you're ready, run:
+- **Node.js** (v18 recommended)
+- **npm**
+- **Expo CLI** (via `npx`)
+- **Expo Go** app on your Android phone
+- **Backend running on port 3000**
+
+---
+
+## Installation
+
+Install dependencies:
 
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Running the App
 
-## Learn more
+### Android
 
-To learn more about developing your project with Expo, look at the following resources:
+Start Expo with tunnel :
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```bash
+npx expo start -c --tunnel
+```
 
-## Join the community
+#### Web (Browser)
 
-Join our community of developers creating universal apps.
+```bash
+npx expo start
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+### Issues:
+
+- On Android, video recording works correctly
+
+- Video upload from Android currently fails due to a network request issue
+
+- Video upload works correctly on web (browser)
