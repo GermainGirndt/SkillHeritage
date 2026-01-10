@@ -1,7 +1,8 @@
-import { View, Text, StyleSheet, TextInput, Pressable, FlatList } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Pressable, FlatList, ActivityIndicator } from 'react-native';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { theme } from '../src/styles/theme';
+import Voice, { SpeechResultsEvent } from '@react-native-voice/voice';
 
 type Instruction = {
   id: string;
@@ -12,23 +13,70 @@ export default function HomeScreen() {
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [instructions, setInstructions] = useState<Instruction[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+
+  const fetchInstructions = async (query: string = '') => {
+    setLoading(true);
+    try {
+      const response = await fetch(`http://10.212.62.23:3000/instructions?q=${query}`);
+      const data = await response.json();
+      setInstructions(data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    fetchInstructions();
+    const delayDebounceFn = setTimeout(() => {
+      fetchInstructions(search);
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [search]);
+
+  useEffect(() => {
+    Voice.onSpeechResults = (e: SpeechResultsEvent) => {
+      if (e.value && e.value[0]) {
+        setSearch(e.value[0]);
+        setIsListening(false);
+      }
+    };
+
+    return () => {
+      Voice.destroy().then(Voice.removeAllListeners);
+    };
   }, []);
 
-  const fetchInstructions = async () => {
-    /**
-     * Hier sollen später die Anleitungen vom Backend / AI geladen werden.
-     * Zum Beispiel: Transkriptionen oder generierte Schritt-für-Schritt-Instruktionen.
-     */
+const startVoiceSearch = async () => {
+  if (!Voice) {
+    alert("Voice recognition is not supported in Expo Go. Use a Development Build.");
+    return;
+  }
+  try {
+    setIsListening(true);
+    await Voice.start('en-US');
+  } catch (e) {
+    console.error(e);
+    setIsListening(false);
+  }
+};
+
+  const stopVoiceSearch = async () => {
+    try {
+      await Voice.stop();
+      setIsListening(false);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.logo}>SkillHeritage</Text>
 
-      {/* Text search */}
       <TextInput
         placeholder="Search instructions..."
         placeholderTextColor="#888"
@@ -37,28 +85,33 @@ export default function HomeScreen() {
         onChangeText={setSearch}
       />
 
-      {/* Voice search (UI only) */}
-      <Pressable style={styles.voiceButton}>
-        <Text style={styles.voiceText}>🎙️ Voice search</Text>
+      <Pressable 
+        style={[styles.voiceButton, isListening && { backgroundColor: '#ff4444' }]}
+        onPressIn={startVoiceSearch}
+        onPressOut={stopVoiceSearch}
+      >
+        <Text style={styles.voiceText}>
+          {isListening ? 'Listening...' : '🎙️ Voice search'}
+        </Text>
       </Pressable>
 
-      {/* Instruction list from backend */}
-      <FlatList
-        data={instructions}
-        keyExtractor={(item) => item.id}
-        ListEmptyComponent={
-          <Text style={styles.empty}>
-            No instructions yet
-          </Text>
-        }
-        renderItem={({ item }) => (
-          <Pressable style={styles.card}>
-            <Text style={styles.cardTitle}>{item.title}</Text>
-          </Pressable>
-        )}
-      />
+      {loading ? (
+        <ActivityIndicator color={theme.colors.accentGold} style={{ marginTop: 20 }} />
+      ) : (
+        <FlatList
+          data={instructions}
+          keyExtractor={(item) => item.id}
+          ListEmptyComponent={
+            <Text style={styles.empty}>No instructions yet</Text>
+          }
+          renderItem={({ item }) => (
+            <Pressable style={styles.card}>
+              <Text style={styles.cardTitle}>{item.title}</Text>
+            </Pressable>
+          )}
+        />
+      )}
 
-      {/* Record video */}
       <Pressable
         style={styles.fab}
         onPress={() => router.push('/record')}
@@ -69,9 +122,6 @@ export default function HomeScreen() {
   );
 }
 
-/**
- * This screen prepares the home UI for displaying AI-generated instructions.
- */
 const styles = StyleSheet.create({
   container: {
     flex: 1,

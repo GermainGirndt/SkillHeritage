@@ -25,27 +25,50 @@
         "CAMERA",
         "RECORD_AUDIO",
         "WRITE_EXTERNAL_STORAGE",
-        "READ_EXTERNAL_STORAGE"
-      ]
+        "READ_EXTERNAL_STORAGE",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
+        "android.permission.ACCESS_MEDIA_LOCATION",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO",
+        "android.permission.READ_MEDIA_AUDIO",
+        "CAMERA",
+        "RECORD_AUDIO",
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_EXTERNAL_STORAGE",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
+        "android.permission.ACCESS_MEDIA_LOCATION",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO",
+        "android.permission.READ_MEDIA_AUDIO"
+      ],
+      "package": "com.anonymous.skillheritageapp"
     },
     "plugins": [
-  "expo-router",
-  [
-    "expo-camera",
-    {
-      "cameraPermission": "Allow SkillHeritage to access your camera.",
-      "microphonePermission": "Allow SkillHeritage to record audio."
-    }
-  ],
-  [
-    "expo-media-library",
-    {
-      "photosPermission": "Allow SkillHeritage to access your photos.",
-      "savePhotosPermission": "Allow SkillHeritage to save videos.",
-      "isAccessMediaLocationEnabled": true
-    }
-  ]
-]
-
+      "expo-router",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow SkillHeritage to access your camera.",
+          "microphonePermission": "Allow SkillHeritage to record audio."
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow SkillHeritage to access your photos.",
+          "savePhotosPermission": "Allow SkillHeritage to save videos.",
+          "isAccessMediaLocationEnabled": true
+        }
+      ],
+      "@react-native-voice/voice"
+    ]
   }
 }
