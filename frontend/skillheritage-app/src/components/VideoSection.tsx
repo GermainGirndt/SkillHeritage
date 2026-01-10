@@ -1,3 +1,4 @@
+// Zeigt den Videoplayer innerhalb des Interfaces an.
 import { View, Text, StyleSheet } from 'react-native';
 import { Video, ResizeMode } from 'expo-av';
 import { theme } from '../styles/theme';

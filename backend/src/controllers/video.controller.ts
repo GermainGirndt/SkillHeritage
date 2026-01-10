@@ -20,13 +20,13 @@ export class VideoController {
     FileInterceptor('file', {
       storage: diskStorage({
         destination: './uploads',
-        filename: (_, __, cb) => {
+        filename: (_, file, cb) => {
           cb(null, 'latest.mp4');
         },
       }),
     }),
   )
-  uploadVideo(@UploadedFile() file) {
+  uploadVideo(@UploadedFile() file: Express.Multer.File) {
     return { ok: true };
   }
 
@@ -50,12 +50,10 @@ export class VideoController {
     const start = Number(range.replace(/\D/g, ''));
     const end = Math.min(start + CHUNK_SIZE, videoSize - 1);
 
-    const contentLength = end - start + 1;
-
     res.writeHead(206, {
       'Content-Range': `bytes ${start}-${end}/${videoSize}`,
       'Accept-Ranges': 'bytes',
-      'Content-Length': contentLength,
+      'Content-Length': end - start + 1,
       'Content-Type': 'video/mp4',
     });
 

@@ -121,7 +121,7 @@ const startMobileRecording = async () => {
     <View style={styles.container}>
       {Platform.OS === 'web' && !recording ? (
         <View style={[styles.camera, {justifyContent: 'center', alignItems: 'center'}]}>
-             <Text style={{color: 'white'}}>Kamera gotowa (Laptop)</Text>
+             <Text style={{color: 'white'}}>Camera is ready </Text>
         </View>
       ) : (
         <CameraView ref={cameraRef} style={styles.camera} mode="video" />

@@ -1,10 +1,9 @@
-// laptop
-// const BASE_URL = 'http://localhost:3000';
+import { Platform } from 'react-native';
 
-// Handy
-// const BASE_URL = 'https://id-ngrok.ngrok-free.app'; 
-// const BASE_URL = 'ip_address'; 
-const BASE_URL = 'http://10.212.62.23:3000'; 
+const BASE_URL =
+  Platform.OS === 'android'
+    ? 'http://10.212.62.23:3000'
+    : 'http://localhost:3000';
 
 export const API = {
   uploadVideo: `${BASE_URL}/video/upload`,

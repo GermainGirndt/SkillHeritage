@@ -1,3 +1,4 @@
+// Diese Komponente zeigt eine Liste von Video-Schritten an.
 import { View, ActivityIndicator, Text } from 'react-native';
 import { useEffect, useState } from 'react';
 import StepItem from './StepItem';

@@ -1,3 +1,4 @@
+// Diese Komponente stellt einen einzelnen Schritt oder Abschnitt dar.
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { theme } from '../styles/theme';
 
