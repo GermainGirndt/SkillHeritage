@@ -1,14 +1,23 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { theme } from '../styles/theme';
 
-export default function ProgressBar() {
-  const progress = 40; // % – potem z backendu lub stanu
+type Props = {
+  progress: number;
+  title: string;
+  duration?: string;
+};
+
+export default function ProgressBar({ progress, title, duration = '10:00' }: Props) {
+  const currentTime =
+    progress === 0 ? '00:00' : `0${Math.floor(progress / 10)}:30`;
 
   return (
     <View>
       <View style={styles.row}>
-        <Text style={styles.title}>Sharpening the Blade</Text>
-        <Text style={styles.timer}>04:00 / 10:00</Text>
+        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.timer}>
+          {currentTime} / {duration}
+        </Text>
       </View>
 
       <View style={styles.bar}>

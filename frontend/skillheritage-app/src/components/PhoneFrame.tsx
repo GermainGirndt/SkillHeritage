@@ -1,18 +1,11 @@
 import { View, StyleSheet } from 'react-native';
 import { theme } from '../styles/theme';
-import VideoSection from './VideoSection';
-import ProgressBar from './ProgressBar';
-import StepsList from './StepsList';
 
-export default function PhoneFrame() {
+export default function PhoneFrame({ children }: { children: React.ReactNode }) {
   return (
     <View style={styles.phone}>
       <View style={styles.topBar} />
-      <View style={styles.content}>
-        <VideoSection />
-        <ProgressBar />
-        <StepsList />
-      </View>
+      <View style={styles.content}>{children}</View>
     </View>
   );
 }
