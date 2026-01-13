@@ -1,8 +1,17 @@
-import { View, Text, StyleSheet, TextInput, Pressable, FlatList, ActivityIndicator } from 'react-native';
-import { useEffect, useState } from 'react';
-import { useRouter } from 'expo-router';
-import { theme } from '../src/styles/theme';
-import Voice, { SpeechResultsEvent } from '@react-native-voice/voice';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  Pressable,
+  FlatList,
+  ActivityIndicator,
+} from "react-native";
+import { useEffect, useState } from "react";
+import { useRouter } from "expo-router";
+import { theme } from "../src/styles/theme";
+import Voice, { SpeechResultsEvent } from "@react-native-voice/voice";
+import { InstructionsSemanticSearchService } from "@/domain/semantic-search/SemanticSearchService";
 
 type Instruction = {
   id: string;
@@ -11,17 +20,30 @@ type Instruction = {
 
 export default function HomeScreen() {
   const router = useRouter();
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [instructions, setInstructions] = useState<Instruction[]>([]);
   const [loading, setLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
 
-  const fetchInstructions = async (query: string = '') => {
+  const fetchInstructions = async (query: string = "") => {
     setLoading(true);
+
+    if (query.trim() === "") {
+      setLoading(false);
+      setInstructions([]);
+      return;
+    }
+
     try {
-      const response = await fetch(`http://10.212.62.23:3000/instructions?q=${query}`);
-      const data = await response.json();
-      setInstructions(data);
+      // commented, since we use the SemanticSearchService now
+      // const response = await fetch(
+      //   `http://10.212.62.23:3000/instructions?q=${query}`
+      // );
+      // const data = await response.json();
+
+      const results = await InstructionsSemanticSearchService.search(query, 5);
+      const instructionsFromService = results.map((res) => res.result);
+      setInstructions(instructionsFromService);
     } catch (error) {
       console.error(error);
     } finally {
@@ -50,19 +72,21 @@ export default function HomeScreen() {
     };
   }, []);
 
-const startVoiceSearch = async () => {
-  if (!Voice) {
-    alert("Voice recognition is not supported in Expo Go. Use a Development Build.");
-    return;
-  }
-  try {
-    setIsListening(true);
-    await Voice.start('en-US');
-  } catch (e) {
-    console.error(e);
-    setIsListening(false);
-  }
-};
+  const startVoiceSearch = async () => {
+    if (!Voice) {
+      alert(
+        "Voice recognition is not supported in Expo Go. Use a Development Build."
+      );
+      return;
+    }
+    try {
+      setIsListening(true);
+      await Voice.start("en-US");
+    } catch (e) {
+      console.error(e);
+      setIsListening(false);
+    }
+  };
 
   const stopVoiceSearch = async () => {
     try {
@@ -85,18 +109,24 @@ const startVoiceSearch = async () => {
         onChangeText={setSearch}
       />
 
-      <Pressable 
-        style={[styles.voiceButton, isListening && { backgroundColor: '#ff4444' }]}
+      <Pressable
+        style={[
+          styles.voiceButton,
+          isListening && { backgroundColor: "#ff4444" },
+        ]}
         onPressIn={startVoiceSearch}
         onPressOut={stopVoiceSearch}
       >
         <Text style={styles.voiceText}>
-          {isListening ? 'Listening...' : '🎙️ Voice search'}
+          {isListening ? "Listening..." : "🎙️ Voice search"}
         </Text>
       </Pressable>
 
       {loading ? (
-        <ActivityIndicator color={theme.colors.accentGold} style={{ marginTop: 20 }} />
+        <ActivityIndicator
+          color={theme.colors.accentGold}
+          style={{ marginTop: 20 }}
+        />
       ) : (
         <FlatList
           data={instructions}
@@ -112,10 +142,7 @@ const startVoiceSearch = async () => {
         />
       )}
 
-      <Pressable
-        style={styles.fab}
-        onPress={() => router.push('/record')}
-      >
+      <Pressable style={styles.fab} onPress={() => router.push("/record")}>
         <Text style={styles.fabText}>+</Text>
       </Pressable>
     </View>
@@ -130,7 +157,7 @@ const styles = StyleSheet.create({
   },
   logo: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: "700",
     color: theme.colors.accentGold,
     marginBottom: 16,
   },
@@ -138,7 +165,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.card,
     borderRadius: 10,
     padding: 12,
-    color: '#fff',
+    color: "#fff",
     marginBottom: 12,
   },
   voiceButton: {
@@ -146,15 +173,15 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 10,
     marginBottom: 20,
-    alignItems: 'center',
+    alignItems: "center",
   },
   voiceText: {
-    color: '#fff',
-    fontWeight: '600',
+    color: "#fff",
+    fontWeight: "600",
   },
   empty: {
     color: theme.colors.textSecondary,
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: 40,
   },
   card: {
@@ -166,21 +193,21 @@ const styles = StyleSheet.create({
   cardTitle: {
     color: theme.colors.textMain,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   fab: {
-    position: 'absolute',
+    position: "absolute",
     right: 24,
     bottom: 24,
     width: 60,
     height: 60,
     borderRadius: 30,
     backgroundColor: theme.colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   fabText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 32,
   },
 });
