@@ -35,8 +35,19 @@ Make sure you have installed:
 - **Expo CLI** (via `npx`)
 - **Expo Go** app on your Android phone
 - **Backend running on port 3000**
+- Android SDK (36.1)
 
 ---
+
+## Setting Android SDK after Installation
+
+Put into the .bashrc/.zshrc file:
+
+```
+export ANDROID_HOME=$HOME/Library/Android/sdk
+export PATH=$PATH:$ANDROID_HOME/platform-tools
+export PATH=$PATH:$ANDROID_HOME/emulator)
+```
 
 ## Installation
 
