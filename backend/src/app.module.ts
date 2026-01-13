@@ -8,7 +8,12 @@ import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [ConfigModule.forRoot()],
-  controllers: [AppController, VideoController, TranscriptionController, InstructionsController],
+  controllers: [
+    AppController,
+    VideoController,
+    TranscriptionController,
+    InstructionsController,
+  ],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

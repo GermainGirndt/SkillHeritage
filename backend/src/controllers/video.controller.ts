@@ -14,7 +14,6 @@ import { join } from 'path';
 
 @Controller('video')
 export class VideoController {
-
   @Post('upload')
   @UseInterceptors(
     FileInterceptor('file', {
