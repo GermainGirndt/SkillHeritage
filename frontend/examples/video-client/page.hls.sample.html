@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HLS Video Player</title>
+    <style>
+      body {
+        background: #111;
+        color: #fff;
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      video {
+        width: 100%;
+        max-width: 800px;
+        border: 2px solid #444;
+        border-radius: 8px;
+        background: black;
+      }
+
+      .warning {
+        margin-top: 20px;
+        padding: 10px;
+        background: #332222;
+        border: 1px solid #552222;
+        border-radius: 6px;
+        max-width: 800px;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>HLS Player</h1>
+
+    <video id="video" controls autoplay>
+      <!-- Replace with your actual HLS URL -->
+      <source
+        src="http://localhost:3000/hls/master.m3u8"
+        type="application/x-mpegURL"
+      />
+      Your browser does not support HLS playback.
+    </video>
+
+    <div class="warning">
+      ⚠ Only browsers with **native HLS support** can play this video.<br />
+      Works on: Safari (macOS, iOS).<br />
+      Not supported on: Chrome, Firefox, Edge without hls.js.
+    </div>
+  </body>
+</html>
