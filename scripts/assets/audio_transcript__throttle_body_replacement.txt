@@ -1,0 +1,17 @@
+Alright, good morning everyone. This is Tony, and we're tackling a slightly awkward job today: replacing the throttle body on a 2018 Ford Focus. This unit here. I want to record this specifically because the bolt clearance on the bottom two is tight, and I see a lot of the newer guys fumbling with standard ratchets, which just burns time.
+
+Now, I’ve already removed the air intake ducting and disconnected the electrical harness—always disconnect the battery first, obviously. We're looking at four T30 Torx bolts holding the unit to the manifold.
+
+The top two are easy street. Grab your standard ratchet, extension, good to go.
+
+But look down here. See how the engine mount bracket almost completely obscures that bottom-right one? You try to get a full-size tool in there, you’re either scraping your knuckles or going one click at a time. Not efficient.
+
+This is where we use the right tool for the job: a compact 12-volt electric screwdriver, impact-rated, with a flexible shaft extension and the T30 bit. This gives us the low profile and the speed. I'm going to run the bottom two out with this, save myself maybe five minutes, easy.
+
+See that? Nice and quick. Now for the tricky one. I'm tucking the flexible shaft right under the edge of that bracket. Important: When you're using one of these compact drivers in a tight spot, don't just hold the body. Support the back of the tool with your palm and make sure you keep the bit dead straight in the bolt head. You don't want to strip the Torx.
+
+There she goes. It's a little slower, but it’s still faster than a standard ratchet. Bolt is loose.
+
+And that’s the unit free. Quick tip before you pull it out: always have a rag ready to catch any dirt or debris that might fall into the manifold opening. We don't want foreign objects going past the intake valve.
+
+Okay, that's the removal. We'll clean the manifold surface, put the new unit in, and reverse the process. Remember, we always hand-start the bolts before using the driver to prevent cross-threading. And then we'll finish with the torque wrench. Speed is great, but accuracy is what keeps the cars coming back.
