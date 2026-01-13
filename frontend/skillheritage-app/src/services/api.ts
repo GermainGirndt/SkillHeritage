@@ -1,11 +1,8 @@
-import { Platform } from 'react-native';
+import dotenv from "./dotenv";
 
-const BASE_URL =
-  Platform.OS === 'android'
-    ? 'http://10.212.62.23:3000'
-    : 'http://localhost:3000';
+console.log("API BASE URL:", dotenv.CURRENT_BACKEND_API_BASE_URL);
 
 export const API = {
-  uploadVideo: `${BASE_URL}/video/upload`,
-  videoStream: `${BASE_URL}/video/stream`,
+  uploadVideo: `${dotenv.CURRENT_BACKEND_API_BASE_URL}/video/upload`,
+  videoStream: `${dotenv.CURRENT_BACKEND_API_BASE_URL}/video/stream`,
 };
