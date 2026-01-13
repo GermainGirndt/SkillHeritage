@@ -11,13 +11,17 @@ import { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import { theme } from "../src/styles/theme";
 import Voice, { SpeechResultsEvent } from "@react-native-voice/voice";
-import { InstructionsSemanticSearchService } from "@/domain/semantic-search/SemanticSearchService";
-import Instruction from "@/models/Instructions";
+import {
+  InstructionsSearchHit,
+  InstructionsSemanticSearchService,
+} from "@/domain/semantic-search/SemanticSearchService";
 
 export default function HomeScreen() {
   const router = useRouter();
   const [search, setSearch] = useState("");
-  const [instructions, setInstructions] = useState<Instruction[]>([]);
+  const [instructionSearchHits, setInstructionSearchHits] = useState<
+    InstructionsSearchHit[]
+  >([]);
   const [loading, setLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
 
@@ -26,7 +30,7 @@ export default function HomeScreen() {
 
     if (query.trim() === "") {
       setLoading(false);
-      setInstructions([]);
+      setInstructionSearchHits([]);
       return;
     }
 
@@ -38,8 +42,8 @@ export default function HomeScreen() {
       // const data = await response.json();
 
       const results = await InstructionsSemanticSearchService.search(query, 5);
-      const instructionsFromService = results.map((res) => res.result);
-      setInstructions(instructionsFromService);
+      const instructionsSearchHits = results.map((res) => res.result);
+      setInstructionSearchHits(instructionsSearchHits);
     } catch (error) {
       console.error(error);
     } finally {
@@ -125,7 +129,7 @@ export default function HomeScreen() {
         />
       ) : (
         <FlatList
-          data={instructions}
+          data={instructionSearchHits}
           keyExtractor={(item) => item.id}
           ListEmptyComponent={
             <Text style={styles.empty}>No instructions yet</Text>
@@ -136,9 +140,7 @@ export default function HomeScreen() {
               onPress={() => router.push(`/instructions/${item.id}`)}
             >
               <Text style={styles.cardTitle}>{item.title}</Text>
-              <Text style={styles.cardSubtitle}>
-                {item.transcript.fullText.slice(0, 20) + "..."}
-              </Text>
+              <Text style={styles.cardSubtitle}>{item.shortDescription}</Text>
             </Pressable>
           )}
         />

@@ -21,6 +21,7 @@ interface IStepByStepInstructions {
 interface IInstructions {
   id: string;
   title: string;
+  shortDescription: string; // TODO: generate from transcript
   videoSource: IVideoSource;
   transcript: IAudioTranscript;
   stepByStepInstructions: IStepByStepInstructions;

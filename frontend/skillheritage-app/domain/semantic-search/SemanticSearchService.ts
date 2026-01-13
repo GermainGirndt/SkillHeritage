@@ -1,24 +1,33 @@
 import Instructions from "@/models/Instructions";
 
-interface ISemanticSearchServiceResult<Result> {
-  result: Result;
+/**
+ * A single semantic-search hit. Keep this lightweight for list rendering.
+ * Fetch the full Instructions object separately via an InstructionsRepository.
+ */
+export type InstructionsSearchHit = Pick<
+  Instructions,
+  "id" | "title" | "shortDescription"
+>;
+
+export interface ISemanticSearchServiceResult<Hit> {
+  result: Hit;
   score: number;
 }
 
-interface ISemanticSearchService<Result> {
+export interface ISemanticSearchService<Hit> {
   search(
     query: string,
     topK: number
-  ): Promise<Array<ISemanticSearchServiceResult<Result>>>;
+  ): Promise<Array<ISemanticSearchServiceResult<Hit>>>;
 }
 
 class DummyInstructionsSemanticSearchService
-  implements ISemanticSearchService<Instructions>
+  implements ISemanticSearchService<InstructionsSearchHit>
 {
   async search(
     query: string,
     topK: number
-  ): Promise<Array<ISemanticSearchServiceResult<Instructions>>> {
+  ): Promise<Array<ISemanticSearchServiceResult<InstructionsSearchHit>>> {
     if (query.trim() === "") {
       throw new Error("Query cannot be empty");
     }
@@ -27,57 +36,22 @@ class DummyInstructionsSemanticSearchService
       throw new Error("topK must be greater than 0");
     }
 
-    const firstResult: ISemanticSearchServiceResult<Instructions> = {
+    const firstResult: ISemanticSearchServiceResult<InstructionsSearchHit> = {
       result: {
         id: "instruction_1",
         title: "How to change a car tire",
-        videoSource: {
-          url: "https://example.com/videos/change_car_tire.mp4",
-        },
-        transcript: {
-          fullText: "To change a car tire, first loosen the lug nuts...",
-          timestamps: [
-            {
-              timestamp: 0,
-              text: "To change a car tire, first loosen the lug nuts...",
-            },
-            {
-              timestamp: 10,
-              text: "Then, jack up the car and remove the flat tire...",
-            },
-          ],
-        },
-        stepByStepInstructions: {
-          text: "Step 1: Loosen the lug nuts...\nStep 2: Jack up the car...\nStep 3: Remove the flat tire...\nStep 4: Mount the spare tire...\nStep 5: Tighten the lug nuts...\n Step 6: Lower the car and finish tightening the lug nuts.",
-        },
+        shortDescription:
+          "Learn how to change a car tire safely and efficiently.",
       },
       score: 0.95,
     };
 
-    const secondResult: ISemanticSearchServiceResult<Instructions> = {
+    const secondResult: ISemanticSearchServiceResult<InstructionsSearchHit> = {
       result: {
         id: "instruction_2",
         title: "How to repair a car motor",
-        videoSource: {
-          url: "https://example.com/videos/repair_car_motor.mp4",
-        },
-        transcript: {
-          fullText:
-            "To repair a car motor, first repair the ignition system...",
-          timestamps: [
-            {
-              timestamp: 0,
-              text: "To repair a car motor, first repair the ignition system...",
-            },
-            {
-              timestamp: 10,
-              text: "Then, diagnose the fuel system and check for any issues...",
-            },
-          ],
-        },
-        stepByStepInstructions: {
-          text: "Step 1: Repair the ignition system...\nStep 2: Diagnose the fuel system...\nStep 3: Check for any issues...\nStep 4: Replace faulty parts...\nStep 5: Test the motor...\n Step 6: Finalize and clean up.",
-        },
+        shortDescription:
+          "Learn the basics of repairing a car motor, starting with the ignition system.",
       },
       score: 0.9,
     };
@@ -86,7 +60,5 @@ class DummyInstructionsSemanticSearchService
   }
 }
 
-export const InstructionsSemanticSearchService: ISemanticSearchService<Instructions> =
+export const InstructionsSemanticSearchService: ISemanticSearchService<InstructionsSearchHit> =
   new DummyInstructionsSemanticSearchService();
-
-export { ISemanticSearchService };
