@@ -12,11 +12,7 @@ import { useRouter } from "expo-router";
 import { theme } from "../src/styles/theme";
 import Voice, { SpeechResultsEvent } from "@react-native-voice/voice";
 import { InstructionsSemanticSearchService } from "@/domain/semantic-search/SemanticSearchService";
-
-type Instruction = {
-  id: string;
-  title: string;
-};
+import Instruction from "@/models/Instructions";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -135,8 +131,14 @@ export default function HomeScreen() {
             <Text style={styles.empty}>No instructions yet</Text>
           }
           renderItem={({ item }) => (
-            <Pressable style={styles.card}>
+            <Pressable
+              style={styles.card}
+              onPress={() => router.push(`/instructions/${item.id}`)}
+            >
               <Text style={styles.cardTitle}>{item.title}</Text>
+              <Text style={styles.cardSubtitle}>
+                {item.transcript.fullText.slice(0, 20) + "..."}
+              </Text>
             </Pressable>
           )}
         />
@@ -194,6 +196,10 @@ const styles = StyleSheet.create({
     color: theme.colors.textMain,
     fontSize: 16,
     fontWeight: "600",
+  },
+  cardSubtitle: {
+    color: theme.colors.textSecondary,
+    marginTop: 8,
   },
   fab: {
     position: "absolute",
