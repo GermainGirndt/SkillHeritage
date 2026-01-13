@@ -2,6 +2,9 @@ import * as Device from "expo-device";
 
 const isEmulator = !Device.isDevice;
 
+// NOTES:
+// for loading env variables in expo, the variables must start with EXPO_PUBLIC_
+// see: https://docs.expo.dev/guides/environment-variables/
 interface EnvironmentVariables {
   CURRENT_BACKEND_API_BASE_URL: string;
   BACKEND_API_BASE_URL_ANDROID_PHONE: string;
