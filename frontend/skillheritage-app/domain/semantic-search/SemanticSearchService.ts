@@ -18,7 +18,7 @@ export interface ISemanticSearchService<Hit> {
   search(
     query: string,
     topK: number
-  ): Promise<Array<ISemanticSearchServiceResult<Hit>>>;
+  ): Promise<ISemanticSearchServiceResult<Hit>[]>;
 }
 
 class DummyInstructionsSemanticSearchService
@@ -27,7 +27,7 @@ class DummyInstructionsSemanticSearchService
   async search(
     query: string,
     topK: number
-  ): Promise<Array<ISemanticSearchServiceResult<InstructionsSearchHit>>> {
+  ): Promise<ISemanticSearchServiceResult<InstructionsSearchHit>[]> {
     if (query.trim() === "") {
       throw new Error("Query cannot be empty");
     }
