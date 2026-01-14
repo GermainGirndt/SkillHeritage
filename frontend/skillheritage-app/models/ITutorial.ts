@@ -7,6 +7,7 @@ interface ITutorial {
   videoUrl?: string; // if hosted remotely
   videoLocalFilePath?: string; // if stored locally
   audioTranscript: string; // generated from speech2text
+  // generated from speech2text with timestamps
   timelinedAudioTranscript: {
     order: number;
     timestamp: number;
