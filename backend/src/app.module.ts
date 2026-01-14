@@ -9,6 +9,8 @@ import { InstructionsController } from './controllers/instructions.controller';
 import { TranscriptionController } from './controllers/transcription.controller';
 import { SemanticSearchController } from './controllers/semantic-search.controller';
 import { configValidationSchema } from './configValidationSchema';
+import { TutorialsModule } from './modules/tutorial/tutorials.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -23,6 +25,8 @@ import { configValidationSchema } from './configValidationSchema';
         uri: config.get<string>('MONGODB_URI'),
       }),
     }),
+    TutorialsModule,
+    ScheduleModule.forRoot(),
   ],
   controllers: [
     AppController,
