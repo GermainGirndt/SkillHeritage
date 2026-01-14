@@ -21,7 +21,7 @@ import {
   useCameraPermissions,
   useMicrophonePermissions,
 } from "expo-camera";
-
+import axios from 'axios'
 type Props = {
   onRecorded?: (uri: string) => void;
 };
@@ -47,7 +47,7 @@ export default function AudioRecorder({ onRecorded }: Props) {
 
   const [statusText, setStatusText] = useState("Idle");
   const [seconds, setSeconds] = useState(0);
-
+  const [transciption, setransciption] = useState<string | null>(null);
   useEffect(() => {
     console.log(
       `Camera permission: ${cameraPermission?.status}, Microphone permission: ${microphonePermission?.status}`
@@ -85,7 +85,7 @@ export default function AudioRecorder({ onRecorded }: Props) {
       // Stop playback before recording
       try {
         player.pause();
-      } catch {}
+      } catch { }
 
       setStatusText("Starting…");
       setSeconds(0);
@@ -170,12 +170,12 @@ export default function AudioRecorder({ onRecorded }: Props) {
       try {
         player.pause();
         player.seekTo(0);
-      } catch {}
+      } catch { }
 
       setRecordingUri(null);
       setSeconds(0);
       setStatusText("Idle");
-    } catch {}
+    } catch { }
   };
 
   const mmss = (total: number) => {
@@ -204,6 +204,43 @@ export default function AudioRecorder({ onRecorded }: Props) {
       </View>
     );
   }
+
+
+  const transcribe = async () => {
+
+    if (!recordingUri) {
+      Alert.alert("No recording", "Record something first.");
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      let blob = await fetch(recordingUri).then(res => res.blob());
+      formData.append('audiofile', blob);
+      console.log(formData)
+      axios({
+        method: "post",
+        url: "http://127.0.0.1:3000/transcription",
+        data: formData,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        }
+      })
+        .then(response => {
+          setransciption(response.data.text)
+        })
+        .catch(error => console.error(error));
+
+    } catch (e: any) {
+      console.warn(e);
+      Alert.alert(
+        "Transcription error",
+        e?.message ?? "Something went wrong."
+      );
+    }
+  };
+
+
 
   return (
     <View style={styles.card}>
@@ -252,6 +289,24 @@ export default function AudioRecorder({ onRecorded }: Props) {
       ) : (
         <Text style={styles.muted}>No recording yet.</Text>
       )}
+
+
+      <View style={styles.row}>
+        <TouchableOpacity
+          onPress={transcribe}
+          style={[styles.btn]}
+        >
+          <Text style={styles.btnText}>{"Transcribe"}</Text>
+        </TouchableOpacity>
+      </View>
+      {transciption ? (
+        <Text style={styles.uri} numberOfLines={2}>
+          {transciption}
+        </Text>
+      ) : (
+        <Text style={styles.muted}>No transciption yet.</Text>
+      )}
+
     </View>
   );
 }
