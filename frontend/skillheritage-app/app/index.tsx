@@ -43,7 +43,7 @@ export default function HomeScreen() {
     try {
       // commented, since we use the SemanticSearchService now
       // const response = await fetch(
-      //   `http://10.212.62.23:3000/instructions?q=${query}`
+      //   `http://10.212.62.23:3000/Tutorial?q=${query}`
       // );
       // const data = await response.json();
 
@@ -109,7 +109,7 @@ export default function HomeScreen() {
       <Text style={styles.logo}>SkillHeritage</Text>
 
       <TextInput
-        placeholder="Search instructions..."
+        placeholder="Search Tutorial..."
         placeholderTextColor="#888"
         style={styles.search}
         value={search}
@@ -138,13 +138,11 @@ export default function HomeScreen() {
         <FlatList
           data={instructionSearchHits}
           keyExtractor={(item) => item.id}
-          ListEmptyComponent={
-            <Text style={styles.empty}>No instructions yet</Text>
-          }
+          ListEmptyComponent={<Text style={styles.empty}>No Tutorial yet</Text>}
           renderItem={({ item }) => (
             <Pressable
               style={styles.card}
-              onPress={() => router.push(`/instructions/${item.id}`)}
+              onPress={() => router.push(`/Tutorial/${item.id}`)}
             >
               <Text style={styles.cardTitle}>{item.title}</Text>
               <Text style={styles.cardSubtitle}>{item.shortDescription}</Text>

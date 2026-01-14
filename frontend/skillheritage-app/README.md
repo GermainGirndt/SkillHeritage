@@ -12,7 +12,7 @@ The app focuses on **video recording and playback** and is designed to work with
   - Web (browser)
 - Video upload to backend
 - Video playback via streaming endpoint
-- Prepared UI for future AI transcription & instruction search
+- Prepared UI for future AI transcription & Tutorial search
 
 ---
 

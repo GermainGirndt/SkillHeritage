@@ -1,11 +1,11 @@
-import Instructions from "@/models/Instructions";
+import Tutorial from "@/models/ITutorial";
 
 /**
  * A single semantic-search hit. Keep this lightweight for list rendering.
- * Fetch the full Instructions object separately via an InstructionsRepository.
+ * Fetch the full Tutorial object separately via an InstructionsRepository.
  */
 export type InstructionsSearchHit = Pick<
-  Instructions,
+  Tutorial,
   "id" | "title" | "shortDescription"
 >;
 
