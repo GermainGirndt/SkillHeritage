@@ -15,6 +15,7 @@ import {
   InstructionsSearchHit,
   InstructionsSemanticSearchService,
 } from "@/domain/semantic-search/SemanticSearchService";
+import AudioRecorder from "./AudioRecorder";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -81,7 +82,8 @@ export default function HomeScreen() {
     }
     try {
       setIsListening(true);
-      await Voice.start("en-US");
+      const result = await Voice.start("en-US");
+      console.log("Voice start result:", result);
     } catch (e) {
       console.error(e);
       setIsListening(false);
@@ -149,6 +151,8 @@ export default function HomeScreen() {
       <Pressable style={styles.fab} onPress={() => router.push("/record")}>
         <Text style={styles.fabText}>+</Text>
       </Pressable>
+
+      <AudioRecorder onRecorded={(uri) => console.log("Recorded file:", uri)} />
     </View>
   );
 }

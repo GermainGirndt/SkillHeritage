@@ -14,6 +14,8 @@ export default function RecordScreen() {
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   const [microphonePermission, requestMicrophonePermission] = useMicrophonePermissions();
   const cameraRef = useRef<CameraView | null>(null);
+
+  console.log(`Camera permission: ${cameraPermission?.status}, Microphone permission: ${microphonePermission?.status}`);
   
   const [recording, setRecording] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
