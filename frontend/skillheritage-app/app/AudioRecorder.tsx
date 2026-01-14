@@ -31,10 +31,6 @@ export default function AudioRecorder({ onRecorded }: Props) {
   const [microphonePermission, requestMicrophonePermission] =
     useMicrophonePermissions();
 
-  console.log(
-    `Camera permission: ${cameraPermission?.status}, Microphone permission: ${microphonePermission?.status}`
-  );
-
   // Recorder
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const recorderState = useAudioRecorderState(recorder);
@@ -53,6 +49,10 @@ export default function AudioRecorder({ onRecorded }: Props) {
   const [seconds, setSeconds] = useState(0);
 
   useEffect(() => {
+    console.log(
+      `Camera permission: ${cameraPermission?.status}, Microphone permission: ${microphonePermission?.status}`
+    );
+
     if (!isRecording) return;
     const id = setInterval(() => setSeconds((s) => s + 1), 1000);
     return () => clearInterval(id);
