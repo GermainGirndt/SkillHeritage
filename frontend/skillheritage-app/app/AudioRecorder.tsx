@@ -255,39 +255,113 @@ export default function AudioRecorder({ onRecorded }: Props) {
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   card: {
     padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#ddd",
+    borderRadius: 16,
     gap: 12,
+
+    // Light surface so it stands out on dark screens
+    backgroundColor: "#F8FAFC", // near-white
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+
+    // Shadow (iOS) + elevation (Android)
+    shadowColor: "#0F172A",
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 4,
   },
-  title: { fontSize: 18, fontWeight: "600" },
+
+  title: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#0F172A",
+    letterSpacing: 0.2,
+  },
+
   row: { flexDirection: "row", alignItems: "center", gap: 10 },
+
   badge: {
-    paddingVertical: 4,
+    paddingVertical: 5,
     paddingHorizontal: 10,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#CBD5E1",
+    backgroundColor: "#FFFFFF",
     fontSize: 12,
+    fontWeight: "700",
+    color: "#334155",
   },
-  timer: { marginLeft: "auto", fontVariant: ["tabular-nums"], fontSize: 14 },
+
+  timer: {
+    marginLeft: "auto",
+    fontVariant: ["tabular-nums"],
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#0F172A",
+  },
+
   btn: {
-    paddingVertical: 10,
+    paddingVertical: 11,
     paddingHorizontal: 14,
-    borderRadius: 10,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#CBD5E1",
+    backgroundColor: "#FFFFFF",
+
+    // Make buttons feel tappable on light surface
+    shadowColor: "#0F172A",
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
-  btnText: { fontWeight: "600" },
-  btnRec: { backgroundColor: "#111" },
-  btnStop: { backgroundColor: "#111" },
-  btnPlay: { backgroundColor: "#111" },
-  btnGhost: { backgroundColor: "transparent" },
-  btnDisabled: { opacity: 0.4 },
-  muted: { color: "#666" },
-  uri: { fontSize: 12, color: "#444" },
+
+  btnText: {
+    fontWeight: "800",
+    color: "#0F172A",
+  },
+
+  // Primary-ish buttons (blue)
+  btnRec: {
+    backgroundColor: "#2563EB",
+    borderColor: "#1D4ED8",
+  },
+  btnStop: {
+    backgroundColor: "#DC2626",
+    borderColor: "#B91C1C",
+  },
+  btnPlay: {
+    backgroundColor: "#0EA5E9",
+    borderColor: "#0284C7",
+  },
+
+  // Ghost button that still reads on the light card
+  btnGhost: {
+    backgroundColor: "transparent",
+    borderColor: "#CBD5E1",
+
+    // remove button surface feel
+    shadowColor: "transparent",
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 0,
+  },
+
+  // Make disabled state still visible (not too faint)
+  btnDisabled: {
+    opacity: 0.55,
+  },
+
+  muted: {
+    color: "#475569",
+  },
+
+  uri: {
+    fontSize: 12,
+    color: "#334155",
+  },
 });

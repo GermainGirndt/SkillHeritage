@@ -148,11 +148,10 @@ export default function HomeScreen() {
         />
       )}
 
+      <AudioRecorder onRecorded={(uri) => console.log("Recorded file:", uri)} />
       <Pressable style={styles.fab} onPress={() => router.push("/record")}>
         <Text style={styles.fabText}>+</Text>
       </Pressable>
-
-      <AudioRecorder onRecorded={(uri) => console.log("Recorded file:", uri)} />
     </View>
   );
 }
