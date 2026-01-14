@@ -61,10 +61,6 @@ export class TutorialProcessingService {
           await this.stepTranscriptReady(tutorial);
           break;
 
-        case TutorialStatus.LLM_PROCESSING:
-          await this.stepLLMProcessing(tutorial);
-          break;
-
         case TutorialStatus.FAILED:
           await this.stepFailureRecovery(tutorial);
           break;
@@ -153,20 +149,6 @@ export class TutorialProcessingService {
       tutorial._id.toString(),
       TutorialStatus.LLM_PROCESSING,
     );
-  }
-
-  /**
-   * llm_processing -> completed
-   */
-  private async stepLLMProcessing(tutorial: TutorialDocument) {
-    // TODO:
-    // - poll LLM job or compute synchronously
-    // - store:
-    //   - title
-    //   - shortDescription
-    //   - structuredInstructions
-
-    await this.setStatus(tutorial._id.toString(), TutorialStatus.COMPLETED);
   }
 
   private async stepFailureRecovery(tutorial: TutorialDocument) {

@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { Connection, Model, Types } from 'mongoose';
-import { Tutorial, TutorialDocument } from './schemas/tutorial.schema';
+import { Tutorial, TutorialDocument } from '../schemas/tutorial.schema';
 import { GridFSBucket } from 'mongodb';
 import { Readable } from 'stream';
 import { v4 as uuidv4 } from 'uuid';
@@ -95,6 +95,7 @@ export class TutorialsService {
     return new Promise((resolve, reject) => {
       const uploadStream = this.bucket.openUploadStream(filename, {
         metadata: {
+          filename,
           contentType,
           // you can add more metadata later (userId, source, etc)
           uploadedAt: new Date().toISOString(),
