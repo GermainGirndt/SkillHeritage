@@ -1,0 +1,13 @@
+@filename = upload-video-test.mp4
+@boundary = boundary
+
+### Upload tutorial video
+POST http://localhost:3000/tutorials
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="{{filename}}"
+Content-Type: video/mp4
+
+< ./{{filename}}
+--boundary--

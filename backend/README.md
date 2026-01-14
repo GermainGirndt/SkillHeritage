@@ -32,6 +32,21 @@
 $ npm install
 ```
 
+## Setup
+
+- Docker for Mongo DB
+
+```bash
+docker run -d \
+  --name mongo \
+  -p 27017:27017 \
+  -v mongo_data:/data/db \
+  mongo:7
+
+```
+
+Note: Use an app like MongoCompass for visualization
+
 ## Running the app
 
 ```bash

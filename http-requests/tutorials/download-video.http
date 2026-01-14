@@ -1,0 +1,10 @@
+### Download full tutorial video
+
+@baseUrl = http://localhost:3000
+@tutorialId = 6967b3382662662f0d4433e7
+
+### Download video to a file
+GET {{baseUrl}}/tutorials/{{tutorialId}}/video
+Accept: video/mp4
+
+>> downloaded-video.mp4
