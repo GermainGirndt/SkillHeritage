@@ -10,7 +10,12 @@ import {
 import { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import { theme } from "../src/styles/theme";
+
+// Should we really use @react-native-voice? It just works in dev builds, not in Expo Go.
+// It think it's better to use the native microphone access from expo-audio or expo-camera
+// and then convert it into text via an API call to the backend (or locally using Whisper).
 import Voice, { SpeechResultsEvent } from "@react-native-voice/voice";
+
 import {
   InstructionsSearchHit,
   InstructionsSemanticSearchService,
