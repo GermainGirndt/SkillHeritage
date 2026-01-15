@@ -109,12 +109,11 @@ export class TutorialProcessingService {
   // ---------------------------
 
   /**
-   * uploaded -> transcribing
+   * uploaded -> ready_to_transcribe
    */
   private async stepUploaded(tutorial: TutorialDocument) {
     // TODO:
-    // - read video from GridFS (tutorial.videoGridFsFileId)
-    // - start transcription (call external service or enqueue job)
+    // - preprocess video if needed(e.g. for streaming)
 
     await this.setStatus(
       tutorial._id.toString(),
@@ -123,14 +122,15 @@ export class TutorialProcessingService {
   }
 
   /**
-   * transcribing -> transcript_ready
+   * ready_to_transcribe -> ready_for_llm_processing
    */
   private async stepTranscribe(tutorial: TutorialDocument) {
-    // TODO:
-    // - poll transcription result or check if transcription finished
-    // - store results:
-    //   - audioTranscript
-    //   - timelinedAudioTranscript
+    // TODO: (Katharina)
+    // - call transcription service
+    //    - store audioTranscript
+    //    - store timelinedAudioTranscript
+    //    - ...
+    // in tutorial document
 
     await this.tutorialModel.updateOne(
       { _id: tutorial._id },
@@ -145,12 +145,16 @@ export class TutorialProcessingService {
   }
 
   /**
-   * transcript_ready -> llm_processing
+   * ready_for_llm_processing -> ready_for_vector_store_storage
    */
   private async stepLLMProcessing(tutorial: TutorialDocument) {
-    // TODO:
-    // - generate title / shortDescription / structuredInstructions via LLM
-    // - or enqueue LLM job
+    // TODO: (Katharina)
+    // - call LLM service
+    //    - generate title
+    //    - generate shortDescription
+    //    - generate structuredInstructions
+    //    - ...
+    // via LLM
 
     await this.setStatus(
       tutorial._id.toString(),
@@ -158,11 +162,12 @@ export class TutorialProcessingService {
     );
   }
 
+  // ready_for_vector_store_storage -> completed
   private async stepVectorStoreStorage(tutorial: TutorialDocument) {
-    // TODO:
-    // - generate embeddings and store in vector store
-    //   (call external service or enqueue job)
-    // store file_id from vector store response in tutorial.vectorStoreFileId
+    // TODO: (Germain)
+    // - call vector store / embeddings service
+    //    - generate embeddings or store in vector store
+    //    - store file_id  from vector store response in tutorial.vectorStoreFileId
 
     await this.setStatus(tutorial._id.toString(), TutorialStatus.COMPLETED);
   }
