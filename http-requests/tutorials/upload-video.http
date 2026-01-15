@@ -9,5 +9,5 @@ Content-Type: multipart/form-data; boundary=boundary
 Content-Disposition: form-data; name="file"; filename="{{filename}}"
 Content-Type: video/mp4
 
-< ./{{filename}}
+< ./assets/{{filename}}
 --boundary--

@@ -47,21 +47,25 @@ export class TutorialsService {
     return tutorials;
   }
 
-  async getManyByFileNames(fileNames: string[]): Promise<Tutorial[]> {
-    if (fileNames.length === 0) {
+  async getManyByVectorStoreFileIds(
+    vectorStoreFileIds: string[],
+  ): Promise<Tutorial[]> {
+    if (vectorStoreFileIds.length === 0) {
       return [];
     }
 
     if (
-      fileNames.some((name) => typeof name !== 'string' || name.trim() === '')
+      vectorStoreFileIds.some(
+        (id) => typeof id !== 'string' || id.trim() === '',
+      )
     ) {
       throw new BadRequestException(
-        'All file names must be non-empty strings in getManyByFileNames',
+        'All file IDs must be non-empty strings in getManyByVectorStoreFileIds',
       );
     }
 
     const tutorials = await this.tutorialModel
-      .find({ videoFileName: { $in: fileNames } })
+      .find({ vectorStoreFileId: { $in: vectorStoreFileIds } })
       .lean();
 
     return tutorials;

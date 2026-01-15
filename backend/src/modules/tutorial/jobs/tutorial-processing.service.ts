@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Tutorial, TutorialDocument } from '../schemas/tutorial.schema';
 import { TutorialStatus } from './tutorial-status';
+import { SemanticSearchService } from 'src/modules/semantic-search/services/semantic-search.service';
 
 @Injectable()
 export class TutorialProcessingService {
@@ -11,6 +12,7 @@ export class TutorialProcessingService {
   constructor(
     @InjectModel(Tutorial.name)
     private readonly tutorialModel: Model<TutorialDocument>,
+    private semanticSearchService: SemanticSearchService,
   ) {}
 
   /**
@@ -169,7 +171,43 @@ export class TutorialProcessingService {
     //    - generate embeddings or store in vector store
     //    - store file_id  from vector store response in tutorial.vectorStoreFileId
 
-    await this.setStatus(tutorial._id.toString(), TutorialStatus.COMPLETED);
+    // validate has params needed
+
+    if (!tutorial.id || !tutorial.title || !tutorial.audioTranscript) {
+      throw new Error(
+        `Tutorial ${tutorial._id.toString()} is missing required fields for vector store storage. Tutorial data: ${JSON.stringify(tutorial)}`,
+      );
+    }
+
+    console.log(
+      `Storing tutorial ${tutorial._id.toString()} transcript in vector store.`,
+    );
+    const transcriptBlob = Buffer.from(tutorial.audioTranscript, 'utf-8');
+    const transcriptFile = new File(
+      [transcriptBlob],
+      `${tutorial._id.toString()}-${tutorial.title}-transcript.txt`,
+      { type: 'text/plain' },
+    );
+
+    const { fileId, filename, createdAt } =
+      await this.semanticSearchService.storeFileInVectorStore({
+        file: transcriptFile,
+      });
+
+    tutorial.vectorStoreFileId = fileId;
+    console.log(
+      `Tutorial ${tutorial._id.toString()} transcript stored in vector store with fileId=${fileId}, filename=${filename}, createdAt=${createdAt}`,
+    );
+
+    await this.tutorialModel.updateOne(
+      { _id: tutorial._id },
+      {
+        $set: {
+          vectorStoreFileId: tutorial.vectorStoreFileId,
+          processingStatus: TutorialStatus.COMPLETED,
+        },
+      },
+    );
   }
 
   private async stepFailureRecovery(tutorial: TutorialDocument) {

@@ -7,6 +7,22 @@ interface ISearchVectorStoreParams {
   maxNumResults?: number;
 }
 
+interface SearchHit {
+  fileId: string;
+  filename: string;
+  score: number;
+}
+
+interface IStoreFileInVectorStoreRequestParams {
+  file: File;
+}
+
+interface IStoreFileInVectorStoreResponse {
+  fileId: string;
+  filename: string;
+  createdAt: string;
+}
+
 @Injectable()
 export class OpenAIClient {
   private readonly client: OpenAI;
@@ -36,13 +52,63 @@ export class OpenAIClient {
     return this.client;
   }
 
-  async searchTutorialsVectorStore({
+  async searchInVectorStore({
     intent,
     maxNumResults = 5,
-  }: ISearchVectorStoreParams) {
-    return this.client.vectorStores.search(this.vectorStoreId, {
+  }: ISearchVectorStoreParams): Promise<SearchHit[]> {
+    const page = await this.client.vectorStores.search(this.vectorStoreId, {
       query: intent,
       max_num_results: maxNumResults,
     });
+
+    const results: SearchHit[] = [];
+
+    while (results.length < maxNumResults) {
+      page.data.forEach((item) => {
+        if (results.length >= maxNumResults) {
+          return;
+        }
+
+        if (!item.file_id) {
+          throw new Error(`Item is missing file_id: ${JSON.stringify(item)}`);
+        }
+        if (!item.filename) {
+          throw new Error(`Item is missing filename: ${JSON.stringify(item)}`);
+        }
+        if (item.score === undefined) {
+          throw new Error(`Item is missing score: ${JSON.stringify(item)}`);
+        }
+
+        results.push({
+          fileId: item.file_id,
+          filename: item.filename,
+          score: item.score,
+        });
+      });
+
+      if (!page.hasNextPage()) {
+        break;
+      }
+      await page.getNextPage();
+    }
+
+    return results;
+  }
+
+  async storeFileInVectorStore({
+    file,
+  }: IStoreFileInVectorStoreRequestParams): Promise<IStoreFileInVectorStoreResponse> {
+    const vectorStoreFile = await this.client.vectorStores.files.uploadAndPoll(
+      this.vectorStoreId,
+      file,
+    );
+
+    const { id: fileId, created_at: createdAt } = vectorStoreFile;
+
+    return {
+      fileId,
+      filename: file.name,
+      createdAt: new Date(createdAt).toISOString(),
+    };
   }
 }

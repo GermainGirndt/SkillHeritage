@@ -1,0 +1,18 @@
+### Search tutorials by intent
+
+@baseUrl = http://localhost:3000
+@intent = mechanical service
+@max_num_results = 10
+
+POST {{baseUrl}}/semantic-search/tutorial-transcript
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="transcriptFile"; filename="tutorial-transcript.txt"
+Content-Type: text/plain
+
+This is a sample tutorial transcript.
+It explains how semantic search works step by step.
+< ./assets/tutorial-transcript-example.txt
+--boundary--
+
