@@ -1,23 +1,34 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { OpenAIClient } from 'src/shared/providers/openai.client';
 
-interface ISemanticSearchTutorialsRequest {
+interface IFindTutorialsRequest {
   intent: string;
   maxNumResults?: number;
 }
 
-interface ISemanticSearchTutorialsResponse {
+interface IFindTutorialsResponse {
   intent: string;
   files: { fileId: string; filename: string; score: number }[];
 }
+
+interface IStoreFileInVectorStoreRequestParams {
+  file: File;
+}
+
+interface IStoreFileInVectorStoreResponse {
+  fileId: string;
+  filename: string;
+  createdAt: string;
+}
+
 @Injectable()
 export class SemanticSearchService {
   constructor(private readonly openAIClient: OpenAIClient) {}
 
-  async semanticSearchTutorials({
+  async searchInVectorStore({
     intent,
     maxNumResults,
-  }: ISemanticSearchTutorialsRequest): Promise<ISemanticSearchTutorialsResponse> {
+  }: IFindTutorialsRequest): Promise<IFindTutorialsResponse> {
     if (!intent || intent.trim() === '') {
       throw new BadRequestException(
         'Parameter "intent" is required and must be a non-empty string.',
@@ -34,15 +45,14 @@ export class SemanticSearchService {
       maxNumResults = 5; // Default to 5 results if not specified
     }
 
-    const response = await this.openAIClient.searchTutorialsVectorStore({
+    const searchHits = await this.openAIClient.searchInVectorStore({
       intent,
       maxNumResults,
     });
-    console.log('Received response from vector store search:', response);
-
+    console.log('Received response from vector store search:', searchHits);
     // parse and validate response
-    const files = response.data.map((hit) => {
-      const { file_id: fileId, filename, score } = hit;
+    const files = searchHits.map((hit) => {
+      const { fileId, filename, score } = hit;
 
       if (!fileId || !filename || score === undefined) {
         throw new BadRequestException(
@@ -57,5 +67,23 @@ export class SemanticSearchService {
       intent,
       files,
     };
+  }
+
+  public async storeFileInVectorStore({
+    file,
+  }: IStoreFileInVectorStoreRequestParams): Promise<IStoreFileInVectorStoreResponse> {
+    console.log('Storing file in vector store:', file.name);
+    console.log('File size (bytes):', file.size);
+    console.log(file);
+
+    const storedFileData = await this.openAIClient.storeFileInVectorStore({
+      file,
+    });
+    console.log(
+      'Received response from vector store file storage:',
+      storedFileData,
+    );
+
+    return storedFileData;
   }
 }

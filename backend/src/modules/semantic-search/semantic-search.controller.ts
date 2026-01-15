@@ -1,8 +1,17 @@
-import { Controller, Get, Req, Res } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Req,
+  Res,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { Request, Response } from 'express';
 import { SemanticSearchService } from './services/semantic-search.service';
 import { TutorialsService } from '../tutorial/services/tutorials.service';
 import { Tutorial } from '../tutorial/schemas/tutorial.schema';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 interface IEnhancedTutorial {
   fileId: string;
@@ -52,16 +61,24 @@ export class SemanticSearchController {
       typeof maxNumResults === 'undefined' ? undefined : Number(maxNumResults);
 
     console.log('Calling semantic search service...');
-    const { files } = await this.semanticSearchService.semanticSearchTutorials({
-      intent,
-      maxNumResults: maxNumResultsParsed,
-    });
-    console.log('Received files from semantic search service:', files);
+    const { files: vectorStoreFiles } =
+      await this.semanticSearchService.searchInVectorStore({
+        intent,
+        maxNumResults: maxNumResultsParsed,
+      });
+    console.log(
+      'Received files from semantic search service:',
+      vectorStoreFiles,
+    );
+    const vectorStoreFileIds: string[] = vectorStoreFiles.map(
+      (file) => file.fileId,
+    );
 
-    const fileNames: string[] = files.map((file) => file.filename);
-
-    console.log('Fetching tutorials by file names:', fileNames);
-    const tutorials = await this.tutorialsService.getManyByFileNames(fileNames);
+    console.log('Fetching tutorials by file ids:', vectorStoreFileIds);
+    const tutorials =
+      await this.tutorialsService.getManyByVectorStoreFileIds(
+        vectorStoreFileIds,
+      );
     console.log('Received tutorials from tutorial service:', tutorials);
 
     if (tutorials.length === 0) {
@@ -69,29 +86,88 @@ export class SemanticSearchController {
     }
 
     // enhance with relevance score (sorted)
-    const enhancedTutorials: IEnhancedTutorial[] = files.map((file) => {
-      {
-        const { fileId, filename, score } = file;
-        const tutorial = tutorials.find(
-          (tut) => tut.videoFileName === file.filename,
-        );
-
-        if (!tutorial) {
-          throw new Error(
-            `Tutorial with filename ${filename} not found in database.`,
+    const enhancedTutorials: IEnhancedTutorial[] = vectorStoreFiles.flatMap(
+      (vectorStoreFile) => {
+        {
+          const { fileId, filename, score } = vectorStoreFile;
+          const tutorial = tutorials.find(
+            (tut) => tut.vectorStoreFileId === vectorStoreFile.fileId,
           );
-        }
 
-        return {
-          fileId,
-          filename,
-          score,
-          tutorial,
-        };
-      }
-    });
+          if (!tutorial) {
+            console.warn(
+              `Tutorial with filename ${filename} not found in database.`,
+            );
+            return [];
+          }
+
+          return {
+            fileId,
+            filename,
+            score,
+            tutorial,
+          };
+        }
+      },
+    );
     console.log('Enhanced tutorials:', enhancedTutorials);
 
     return enhancedTutorials;
+  }
+
+  // Test only endpoint
+  // TODO: Remove before delivery
+  @Post('tutorial-transcript')
+  @UseInterceptors(FileInterceptor('transcriptFile'))
+  async storeTutorialTranscriptIntoVectorStore(
+    @UploadedFile() transcriptFile: Express.Multer.File,
+    @Res() response: Response,
+  ): Promise<void> {
+    console.log(
+      `Received request to store tutorial transcript in vector store for file: ${transcriptFile}`,
+    );
+
+    if (!transcriptFile) {
+      response.status(400).json({
+        error: 'Request must contain a file field named "transcriptFile".',
+      });
+      return;
+    }
+
+    // Validate transcript file is a file
+    if (!transcriptFile.buffer || !Buffer.isBuffer(transcriptFile.buffer)) {
+      response.status(400).json({
+        error: `"transcriptFile" must include a file buffer (memory storage).`,
+        got: transcriptFile,
+      });
+      return;
+    }
+
+    try {
+      const bytes = new Uint8Array(transcriptFile.buffer);
+      const file = new File([bytes], transcriptFile.originalname, {
+        type: transcriptFile.mimetype,
+      });
+
+      console.log('Created File object from uploaded transcript file:', file);
+
+      const storeResponse =
+        await this.semanticSearchService.storeFileInVectorStore({
+          file,
+        });
+      console.log(
+        'Successfully stored tutorial transcript in vector store:',
+        storeResponse,
+      );
+      response.status(200).json(storeResponse);
+    } catch (error) {
+      console.error(
+        'Error storing tutorial transcript in vector store:',
+        error,
+      );
+      response.status(500).json({
+        error: 'Failed to store tutorial transcript in vector store.',
+      });
+    }
   }
 }
