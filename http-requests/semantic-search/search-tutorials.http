@@ -1,0 +1,7 @@
+### Search tutorials by intent
+
+@baseUrl = http://localhost:3000
+@intent = mechanical service
+@max_num_results = 10
+
+GET {{baseUrl}}/semantic-search/tutorials?intent={{intent}}&max_num_results={{max_num_results}}

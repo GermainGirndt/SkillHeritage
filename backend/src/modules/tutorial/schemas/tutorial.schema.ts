@@ -75,6 +75,9 @@ export class Tutorial {
   @Prop({ type: String })
   structuredInstructions?: string;
 
+  @Prop({ type: String })
+  vectorStoreFileId?: string;
+
   /**
    * Processing lifecycle state
    * examples:

@@ -25,7 +25,7 @@ export class TutorialsService {
     });
   }
 
-  async getById(id: string) {
+  async getById(id: string): Promise<Tutorial> {
     if (!Types.ObjectId.isValid(id)) {
       throw new BadRequestException('Invalid tutorial id');
     }
@@ -33,13 +33,38 @@ export class TutorialsService {
     const tutorial = await this.tutorialModel.findById(id).lean();
     if (!tutorial) throw new NotFoundException('Tutorial not found');
 
-    return {
-      id: tutorial._id.toString(),
-      videoGridFsFileId: tutorial.videoGridFsFileId.toString(),
-      processingStatus: tutorial.processingStatus,
-      createdAt: tutorial.createdAt,
-      updatedAt: tutorial.updatedAt,
-    };
+    return tutorial;
+  }
+
+  async getManyByIds(ids: string[]): Promise<Tutorial[]> {
+    const validIds = ids.filter((id) => Types.ObjectId.isValid(id));
+    const objectIds = validIds.map((id) => new Types.ObjectId(id));
+
+    const tutorials = await this.tutorialModel
+      .find({ _id: { $in: objectIds } })
+      .lean();
+
+    return tutorials;
+  }
+
+  async getManyByFileNames(fileNames: string[]): Promise<Tutorial[]> {
+    if (fileNames.length === 0) {
+      return [];
+    }
+
+    if (
+      fileNames.some((name) => typeof name !== 'string' || name.trim() === '')
+    ) {
+      throw new BadRequestException(
+        'All file names must be non-empty strings in getManyByFileNames',
+      );
+    }
+
+    const tutorials = await this.tutorialModel
+      .find({ videoFileName: { $in: fileNames } })
+      .lean();
+
+    return tutorials;
   }
 
   async createFromVideoUpload(file: Express.Multer.File) {

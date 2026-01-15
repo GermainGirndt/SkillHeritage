@@ -53,12 +53,16 @@ export class TutorialProcessingService {
           await this.stepUploaded(tutorial);
           break;
 
-        case TutorialStatus.TRANSCRIBING:
-          await this.stepTranscribing(tutorial);
+        case TutorialStatus.READY_TO_TRANSCRIBE:
+          await this.stepTranscribe(tutorial);
           break;
 
-        case TutorialStatus.TRANSCRIPT_READY:
-          await this.stepTranscriptReady(tutorial);
+        case TutorialStatus.READY_FOR_LLM_PROCESSING:
+          await this.stepLLMProcessing(tutorial);
+          break;
+
+        case TutorialStatus.READY_FOR_VECTOR_STORE_STORAGE:
+          await this.stepVectorStoreStorage(tutorial);
           break;
 
         case TutorialStatus.FAILED:
@@ -112,13 +116,16 @@ export class TutorialProcessingService {
     // - read video from GridFS (tutorial.videoGridFsFileId)
     // - start transcription (call external service or enqueue job)
 
-    await this.setStatus(tutorial._id.toString(), TutorialStatus.TRANSCRIBING);
+    await this.setStatus(
+      tutorial._id.toString(),
+      TutorialStatus.READY_TO_TRANSCRIBE,
+    );
   }
 
   /**
    * transcribing -> transcript_ready
    */
-  private async stepTranscribing(tutorial: TutorialDocument) {
+  private async stepTranscribe(tutorial: TutorialDocument) {
     // TODO:
     // - poll transcription result or check if transcription finished
     // - store results:
@@ -131,7 +138,7 @@ export class TutorialProcessingService {
         $set: {
           // audioTranscript: "...",
           // timelinedAudioTranscript: [...],
-          processingStatus: TutorialStatus.TRANSCRIPT_READY,
+          processingStatus: TutorialStatus.READY_FOR_LLM_PROCESSING,
         },
       },
     );
@@ -140,15 +147,24 @@ export class TutorialProcessingService {
   /**
    * transcript_ready -> llm_processing
    */
-  private async stepTranscriptReady(tutorial: TutorialDocument) {
+  private async stepLLMProcessing(tutorial: TutorialDocument) {
     // TODO:
     // - generate title / shortDescription / structuredInstructions via LLM
     // - or enqueue LLM job
 
     await this.setStatus(
       tutorial._id.toString(),
-      TutorialStatus.LLM_PROCESSING,
+      TutorialStatus.READY_FOR_VECTOR_STORE_STORAGE,
     );
+  }
+
+  private async stepVectorStoreStorage(tutorial: TutorialDocument) {
+    // TODO:
+    // - generate embeddings and store in vector store
+    //   (call external service or enqueue job)
+    // store file_id from vector store response in tutorial.vectorStoreFileId
+
+    await this.setStatus(tutorial._id.toString(), TutorialStatus.COMPLETED);
   }
 
   private async stepFailureRecovery(tutorial: TutorialDocument) {
@@ -198,12 +214,16 @@ export class TutorialProcessingService {
       typeof (tutorial as any).structuredInstructions === 'string' &&
       (tutorial as any).structuredInstructions.trim().length > 0;
 
+    const hasVectorStoreFileId: boolean =
+      typeof (tutorial as any).vectorStoreFileId === 'string' &&
+      (tutorial as any).vectorStoreFileId.trim().length > 0;
+
     // Decide the most reasonable status to resume from
     let nextStatus: string;
 
     // No transcript data -> go back to transcription stage
     if (!hasTranscript || !hasTimedTranscript) {
-      nextStatus = TutorialStatus.TRANSCRIBING;
+      nextStatus = TutorialStatus.READY_TO_TRANSCRIBE;
 
       // Transcript exists, but LLM-derived fields missing -> go to LLM processing
     } else if (
@@ -211,9 +231,13 @@ export class TutorialProcessingService {
       !hasStructuredInstructions ||
       !hasShortDescription
     ) {
-      nextStatus = TutorialStatus.LLM_PROCESSING;
+      nextStatus = TutorialStatus.READY_FOR_LLM_PROCESSING;
 
-      // Looks complete based on fields we care about -> complete it
+      // LLM fields exist, but vector store file ID missing -> go to vector store step
+    } else if (!hasVectorStoreFileId) {
+      nextStatus = TutorialStatus.READY_FOR_VECTOR_STORE_STORAGE;
+
+      // All main fields present -> mark as completed
     } else {
       nextStatus = TutorialStatus.COMPLETED;
     }
