@@ -6,15 +6,17 @@ import {
   Pressable,
   FlatList,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import { theme } from "../src/styles/theme";
 
+
 // Should we really use @react-native-voice? It just works in dev builds, not in Expo Go.
 // It think it's better to use the native microphone access from expo-audio or expo-camera
 // and then convert it into text via an API call to the backend (or locally using Whisper).
-import Voice, { SpeechResultsEvent } from "@react-native-voice/voice";
+import { Audio } from "expo-av";
 
 import {
   InstructionsSearchHit,
@@ -29,8 +31,12 @@ export default function HomeScreen() {
     InstructionsSearchHit[]
   >([]);
   const [loading, setLoading] = useState(false);
-  const [isListening, setIsListening] = useState(false);
+  const [isRecordingSearch, setIsRecordingSearch] = useState(false);
+  const [recording, setRecording] = useState<Audio.Recording | null>(null);
 
+  const API_URL = "http://10.212.51.177:3000";
+
+  // text search logic 
   const fetchInstructions = async (query: string = "") => {
     setLoading(true);
 
@@ -46,10 +52,16 @@ export default function HomeScreen() {
       //   `http://10.212.62.23:3000/Tutorial?q=${query}`
       // );
       // const data = await response.json();
-
       const results = await InstructionsSemanticSearchService.search(query, 5);
-      const instructionsSearchHits = results.map((res) => res.result);
-      setInstructionSearchHits(instructionsSearchHits);
+      
+      const hits = results
+        .map((res) => res.result)
+        .filter((item) => 
+          item.title.toLowerCase().includes(query.toLowerCase()) || 
+          item.shortDescription.toLowerCase().includes(query.toLowerCase())
+        );
+
+      setInstructionSearchHits(hits);
     } catch (error) {
       console.error(error);
     } finally {
@@ -65,42 +77,65 @@ export default function HomeScreen() {
     return () => clearTimeout(delayDebounceFn);
   }, [search]);
 
-  useEffect(() => {
-    Voice.onSpeechResults = (e: SpeechResultsEvent) => {
-      if (e.value && e.value[0]) {
-        setSearch(e.value[0]);
-        setIsListening(false);
-      }
-    };
-
-    return () => {
-      Voice.destroy().then(Voice.removeAllListeners);
-    };
-  }, []);
-
-  const startVoiceSearch = async () => {
-    if (!Voice) {
-      alert(
-        "Voice recognition is not supported in Expo Go. Use a Development Build."
-      );
-      return;
-    }
+  // voice search logic
+  const startRecordingSearch = async () => {
     try {
-      setIsListening(true);
-      const result = await Voice.start("en-US");
-      console.log("Voice start result:", result);
-    } catch (e) {
-      console.error(e);
-      setIsListening(false);
+      const permission = await Audio.requestPermissionsAsync();
+      if (permission.status === "granted") {
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: true,
+          playsInSilentModeIOS: true,
+        });
+        const { recording } = await Audio.Recording.createAsync(
+          Audio.RecordingOptionsPresets.HIGH_QUALITY
+        );
+        setRecording(recording);
+        setIsRecordingSearch(true);
+      }
+    } catch (err) {
+      console.error("Failed to start recording", err);
     }
   };
 
-  const stopVoiceSearch = async () => {
+  const stopRecordingSearch = async () => {
+    setIsRecordingSearch(false);
+    if (!recording) return;
+
+    await recording.stopAndUnloadAsync();
+    const uri = recording.getURI();
+    setRecording(null);
+
+    if (uri) {
+      handleTranscription(uri);
+    }
+  };
+
+  const handleTranscription = async (uri: string) => {
+    setLoading(true);
     try {
-      await Voice.stop();
-      setIsListening(false);
+      const formData = new FormData();
+      const filePayload = {
+        uri,
+        type: 'audio/m4a',
+        name: 'search_query.m4a',
+      } as any;
+
+      formData.append('file', filePayload);
+
+      const response = await fetch(`${API_URL}/tutorials/stt`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (data.text) {
+        setSearch(data.text);
+      }
     } catch (e) {
-      console.error(e);
+      console.error("Voice transcription error:", e);
+      Alert.alert("Error", "Could not process voice search.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -108,26 +143,25 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <Text style={styles.logo}>SkillHeritage</Text>
 
-      <TextInput
-        placeholder="Search Tutorial..."
-        placeholderTextColor="#888"
-        style={styles.search}
-        value={search}
-        onChangeText={setSearch}
-      />
-
-      <Pressable
-        style={[
-          styles.voiceButton,
-          isListening && { backgroundColor: "#ff4444" },
-        ]}
-        onPressIn={startVoiceSearch}
-        onPressOut={stopVoiceSearch}
-      >
-        <Text style={styles.voiceText}>
-          {isListening ? "Listening..." : "🎙️ Voice search"}
-        </Text>
-      </Pressable>
+      <View style={styles.searchContainer}>
+        <TextInput
+          placeholder="Search for tutorials..."
+          placeholderTextColor="#888"
+          style={styles.searchInput}
+          value={search}
+          onChangeText={setSearch}
+        />
+        <Pressable
+          style={[
+            styles.micButton,
+            isRecordingSearch && { backgroundColor: "#ff4444" },
+          ]}
+          onPressIn={startRecordingSearch}
+          onPressOut={stopRecordingSearch}
+        >
+          <Text style={styles.micIcon}>{isRecordingSearch ? "🔴" : "🎙️"}</Text>
+        </Pressable>
+      </View>
 
       {loading ? (
         <ActivityIndicator
@@ -138,7 +172,7 @@ export default function HomeScreen() {
         <FlatList
           data={instructionSearchHits}
           keyExtractor={(item) => item.id}
-          ListEmptyComponent={<Text style={styles.empty}>No Tutorial yet</Text>}
+          ListEmptyComponent={<Text style={styles.empty}>No tutorials found.</Text>}
           renderItem={({ item }) => (
             <Pressable
               style={styles.card}
@@ -171,23 +205,29 @@ const styles = StyleSheet.create({
     color: theme.colors.accentGold,
     marginBottom: 16,
   },
-  search: {
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  searchInput: {
+    flex: 1,
     backgroundColor: theme.colors.card,
     borderRadius: 10,
     padding: 12,
     color: "#fff",
-    marginBottom: 12,
+    marginRight: 10,
   },
-  voiceButton: {
+  micButton: {
     backgroundColor: theme.colors.primary,
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 20,
-    alignItems: "center",
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  voiceText: {
-    color: "#fff",
-    fontWeight: "600",
+  micIcon: {
+    fontSize: 20,
   },
   empty: {
     color: theme.colors.textSecondary,
