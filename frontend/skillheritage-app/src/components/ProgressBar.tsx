@@ -1,3 +1,4 @@
+// This component displays a visual progress bar with a title and a calculated timer for the current step.
 import { View, Text, StyleSheet } from 'react-native';
 import { theme } from '../styles/theme';
 

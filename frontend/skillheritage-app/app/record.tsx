@@ -2,7 +2,6 @@ import { View, Text, StyleSheet, Pressable, ActivityIndicator, Alert, Platform }
 import { useState, useRef } from 'react';
 import { useRouter } from 'expo-router';
 import { CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
-import * as MediaLibrary from 'expo-media-library';
 import { theme } from '../src/styles/theme';
 import { API } from '../src/services/api';
 
@@ -54,36 +53,31 @@ export default function RecordScreen() {
       console.log("Stopped recording on laptop");
     }
   };
-const startMobileRecording = async () => {
-  if (!cameraRef.current) return;
-  
-  try {
-    setRecording(true);
-    console.log("Starting mobile record...");
-    const options: any = {
-      quality: '720p', 
-      audio: false,
-    };
 
-    const video = await cameraRef.current.recordAsync(options);
+  const startMobileRecording = async () => {
+    if (!cameraRef.current) return;
     
-    if (video && video.uri) {
-      console.log("Captured URI:", video.uri);
+    try {
+      setRecording(true);
+      const video = await cameraRef.current.recordAsync({
+        quality: '720p',
+      } as any);
       
-      await uploadVideo(video.uri);
+      if (video && video.uri) {
+        await uploadVideo(video.uri);
+      }
+    } catch (err) {
+      console.error("Mobile Recording Error:", err);
+      setRecording(false);
+      Alert.alert("Error", "Recording failed. Check console.");
     }
-  } catch (err) {
-    console.error("Android Error:", err);
-    setRecording(false);
-    Alert.alert("Error", "Recording failed. Check console.");
-  }
-};
+  };
 
   const stopMobileRecording = async () => {
-    setRecording(false);
-    setTimeout(async () => {
-      await cameraRef.current?.stopRecording();
-    }, 500);
+    if (cameraRef.current) {
+      setRecording(false);
+      await cameraRef.current.stopRecording();
+    }
   };
 
   const handleRecordPress = async () => {
@@ -107,16 +101,35 @@ const startMobileRecording = async () => {
     try {
       console.log("Sendind on server...");
       const res = await fetch(API.uploadVideo, { method: 'POST', body: formData });
-      if (res.ok) {
-        Alert.alert("Success", "Film saved!");
-        router.replace('/');
+      const data = await res.json();
+
+      if (res.ok && data.tutorialIdPrivate) {
+        router.replace({
+          pathname: "/player",
+          params: { id: data.tutorialIdPrivate }
+        });
+      } else {
+        throw new Error("Upload failed");
       }
     } catch (e) {
-      console.error("Sending error:", e);
-      Alert.alert("Error", "The film wasn't saved.");
+      console.error("Upload error:", e);
+      const msg = "The film wasn't saved.";
+      Platform.OS === 'web' ? alert(msg) : Alert.alert("Error", msg);
     } finally {
       setIsUploading(false);
     }
+  }
+
+  if (!cameraPermission || !microphonePermission) return <View />;
+  if (!cameraPermission.granted || !microphonePermission.granted) {
+    return (
+      <View style={styles.container}>
+        <Text style={{color: 'white', textAlign: 'center'}}>Permissions needed to proceed</Text>
+        <Pressable onPress={() => {requestCameraPermission(); requestMicrophonePermission();}}>
+            <Text style={{color: 'gold', marginTop: 20, textAlign: 'center'}}>Grant Permissions</Text>
+        </Pressable>
+      </View>
+    );
   }
 
   return (
@@ -132,7 +145,7 @@ const startMobileRecording = async () => {
       {isUploading && (
         <View style={styles.loadingOverlay}>
           <ActivityIndicator size="large" color="#fff" />
-          <Text style={{color: 'white'}}>Wysyłanie...</Text>
+          <Text style={{color: 'white', marginTop: 10}}>Uploading to AI server...</Text>
         </View>
       )}
 

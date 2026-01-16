@@ -1,44 +1,18 @@
-// Diese Komponente zeigt eine Liste von Video-Schritten an.
-import { View, ActivityIndicator, Text } from 'react-native';
-import { useEffect, useState } from 'react';
+// This component renders a scrollable list of tutorial steps using the individual StepItem components.
+import { View } from 'react-native';
 import StepItem from './StepItem';
-import { API } from '../services/api';
-
-type Step = {
-  id: number;
-  time: string;
-  title: string;
-  description: string;
-  progress: number;
-};
 
 type Props = {
   activeStep: number;
-  onStepPress: (index: number, progress: number, title: string) => void;
+  onStepPress: (index: number) => void;
 };
 
 export default function StepsList({ activeStep, onStepPress }: Props) {
-  const [steps, setSteps] = useState<Step[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchSteps();
-  }, []);
-
-  const fetchSteps = async () => {
-  //   try {
-  //     const response = await fetch(`${API.baseUrl}/steps`); // endpoint for steps
-  //     const data = await response.json();
-  //     setSteps(data);
-  //   } catch (error) {
-  //     console.error("Error fetching the steps:", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  };
-
-  if (loading) return <ActivityIndicator color="blue" />;
-  if (steps.length === 0) return <Text>No steps to show</Text>;
+  const steps = [
+    { id: 0, time: "00:00", title: "Intro & Preparation", description: "Open hood and prepare 10mm wrench." },
+    { id: 1, time: "03:30", title: "Cover Removal", description: "Unscrew three bolts holding the plastic cover." },
+    { id: 2, time: "07:30", title: "Part Extraction", description: "Gently pry the element and pull it upwards." },
+  ];
 
   return (
     <View>
@@ -49,9 +23,7 @@ export default function StepsList({ activeStep, onStepPress }: Props) {
           title={step.title}
           description={step.description}
           active={index === activeStep}
-          onPress={() =>
-            onStepPress(index, step.progress, step.title)
-          }
+          onPress={() => onStepPress(index)}
         />
       ))}
     </View>

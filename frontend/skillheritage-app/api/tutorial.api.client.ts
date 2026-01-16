@@ -21,6 +21,7 @@ class DummyTutorialsApiClient implements ITutorialApiClient {
       // uploaded video data
       videoGridFsFileId: "gridfs_file_id-121426262",
       videoFileName: "change_car_tire.mp4",
+            processingStatus: 'completed',
       // audio transcript (speech2text)
       audioTranscript: "To change a car tire, first loosen the lug nuts...",
       timelinedAudioTranscript: [
@@ -55,6 +56,7 @@ class DummyTutorialsApiClient implements ITutorialApiClient {
       videoGridFsFileId: "gridfs_file_id-121426263",
       videoFileName: "repair_car_motor.mp4",
       // audio transcript (speech2text)
+            processingStatus: 'completed',
       audioTranscript:
         "To repair a car motor, start by checking the ignition system...",
       timelinedAudioTranscript: [

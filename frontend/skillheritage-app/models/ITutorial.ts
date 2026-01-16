@@ -2,7 +2,8 @@
 // it should come from the backend
 interface ITutorial {
   id: string;
-
+  videoUrl?: string;
+  processingStatus: 'uploaded' | 'transcribing' | 'completed' | 'failed';
   // uploaded video data
   videoFileName: string;
   videoGridFsFileId: string; // file id for video file in the database (GridFS format chunks)

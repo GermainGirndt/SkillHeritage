@@ -1,3 +1,4 @@
+// This file defines the global navigation structure and theme settings for the entire app.
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -14,29 +15,36 @@ export default function RootLayout() {
             backgroundColor: colorScheme === 'dark' ? '#121212' : '#fff',
           },
           headerTintColor: colorScheme === 'dark' ? '#fff' : '#000',
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
         }}
       >
+        {/* Main Search Screen */}
         <Stack.Screen 
           name="index" 
           options={{ 
-            title: 'Home',
+            title: 'SkillHeritage',
             headerShown: true 
           }} 
         />
         
+        {/* Camera/Recording Screen */}
         <Stack.Screen 
           name="record" 
           options={{ 
-            title: 'Recording', 
+            title: 'Record New Tutorial',
             headerTransparent: true,
             headerTintColor: '#fff' 
           }} 
         />
         
+        {/* Dynamic Tutorial Route */}
         <Stack.Screen 
-          name="player" 
+          name="Tutorial/[id]" 
           options={{ 
-            title: 'Player' 
+            title: 'Tutorial Player',
+            headerShown: false
           }} 
         />
 

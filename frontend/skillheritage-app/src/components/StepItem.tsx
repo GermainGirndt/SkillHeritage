@@ -1,4 +1,4 @@
-// Diese Komponente stellt einen einzelnen Schritt oder Abschnitt dar.
+// This component represents a single interactive row for an individual step within the tutorial timeline.
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { theme } from '../styles/theme';
 

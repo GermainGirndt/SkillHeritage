@@ -1,3 +1,4 @@
+// This component wraps the application content in a visual container that mimics a mobile phone frame.
 import { View, StyleSheet } from 'react-native';
 import { theme } from '../styles/theme';
 
