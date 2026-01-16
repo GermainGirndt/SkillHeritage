@@ -11,8 +11,6 @@ Content-Type: multipart/form-data; boundary=boundary
 Content-Disposition: form-data; name="transcriptFile"; filename="tutorial-transcript.txt"
 Content-Type: text/plain
 
-This is a sample tutorial transcript.
-It explains how semantic search works step by step.
 < ./assets/tutorial-transcript-example.txt
 --boundary--
 
