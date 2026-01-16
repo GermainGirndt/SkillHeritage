@@ -7,6 +7,7 @@ import ITutorial from "@/models/ITutorial";
 export interface ITutorialApiClient {
   getById(id: string): Promise<ITutorial>;
   getByIds(ids: string[]): Promise<ITutorial[]>;
+  list(limit: number): Promise<ITutorial[]>;
 }
 
 /**
@@ -17,24 +18,68 @@ class DummyInstructionsApiClient implements ITutorialApiClient {
   private readonly db: Record<string, ITutorial> = {
     instruction_1: {
       id: "instruction_1",
-      title: "How to change a car tire",
-      shortDescription:
-        "Learn how to change a car tire safely and efficiently.",
-      videoUrl: "https://example.com/videos/change_car_tire.mp4",
-      videoLocalFilePath: undefined,
+      // uploaded video data
+      videoGridFsFileId: "gridfs_file_id-121426262",
+      videoFileName: "change_car_tire.mp4",
+      // audio transcript (speech2text)
       audioTranscript: "To change a car tire, first loosen the lug nuts...",
       timelinedAudioTranscript: [
         {
+          order: 1,
           timestamp: 0,
           text: "To change a car tire, first loosen the lug nuts...",
         },
         {
+          order: 2,
           timestamp: 10,
           text: "Then, jack up the car and remove the flat tire...",
         },
       ],
+      // ai generated
+      title: "How to change a car tire",
+      shortDescription:
+        "Learn how to change a car tire safely and efficiently.",
       structuredInstructions:
         "Step 1: Loosen the lug nuts...\nStep 2: Jack up the car...\nStep 3: Remove the flat tire...\nStep 4: Mount the spare tire...\nStep 5: Tighten the lug nuts...\nStep 6: Lower the car and finish tightening the lug nuts.",
+
+      // 'audioTranscript' file id (in the embedding vector store)
+      vectorStoreFileId: "vector_store_file_id-121426262",
+
+      // metadata
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    instruction_2: {
+      id: "instruction_2",
+      // uploaded video data
+      videoGridFsFileId: "gridfs_file_id-121426263",
+      videoFileName: "repair_car_motor.mp4",
+      // audio transcript (speech2text)
+      audioTranscript:
+        "To repair a car motor, start by checking the ignition system...",
+      timelinedAudioTranscript: [
+        {
+          order: 1,
+          timestamp: 0,
+          text: "To repair a car motor, start by checking the ignition system...",
+        },
+        {
+          order: 2,
+          timestamp: 12,
+          text: "Next, inspect the fuel system for any blockages...",
+        },
+      ],
+      // ai generated
+      title: "How to repair a car motor",
+      shortDescription:
+        "Learn the basics of repairing a car motor, starting with the ignition system.",
+      structuredInstructions:
+        "Step 1: Check the ignition system...\nStep 2: Inspect the fuel system...\nStep 3: Examine the cooling system...\nStep 4: Test the battery and alternator...\nStep 5: Replace faulty components as needed.",
+
+      // 'audioTranscript' file id (in the embedding vector store)
+      vectorStoreFileId: "vector_store_file_id-121426263",
+
+      // metadata
       createdAt: new Date(),
       updatedAt: new Date(),
     },
@@ -49,7 +94,13 @@ class DummyInstructionsApiClient implements ITutorialApiClient {
   async getByIds(ids: string[]): Promise<ITutorial[]> {
     return Promise.all(ids.map((id) => this.getById(id)));
   }
+
+  async list(limit: number): Promise<ITutorial[]> {
+    return Object.values(this.db).slice(0, limit);
+  }
 }
 
-export const InstructionsRepository: ITutorialApiClient =
+const InstructionsRepository: ITutorialApiClient =
   new DummyInstructionsApiClient();
+
+export { DummyInstructionsApiClient, InstructionsRepository };

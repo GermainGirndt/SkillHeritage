@@ -12,15 +12,15 @@ import { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import { theme } from "../src/styles/theme";
 
-
 // Should we really use @react-native-voice? It just works in dev builds, not in Expo Go.
 // It think it's better to use the native microphone access from expo-audio or expo-camera
 // and then convert it into text via an API call to the backend (or locally using Whisper).
 import { Audio } from "expo-av";
 
 import {
-  InstructionsSearchHit,
-  InstructionsSemanticSearchService,
+  ITutorialSemanticSearchHit,
+  ITutorialSemanticSearchService,
+  TutorialSemanticSearchService,
 } from "@/domain/semantic-search/SemanticSearchService";
 import AudioRecorder from "./AudioRecorder";
 
@@ -28,7 +28,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [instructionSearchHits, setInstructionSearchHits] = useState<
-    InstructionsSearchHit[]
+    ITutorialSemanticSearchHit[]
   >([]);
   const [loading, setLoading] = useState(false);
   const [isRecordingSearch, setIsRecordingSearch] = useState(false);
@@ -36,11 +36,12 @@ export default function HomeScreen() {
 
   const API_URL = "http://10.212.51.177:3000";
 
-  // text search logic 
+  // text search logic
   const fetchInstructions = async (query: string = "") => {
     setLoading(true);
 
     if (query.trim() === "") {
+      console.log("Empty query, skipping fetch.");
       setLoading(false);
       setInstructionSearchHits([]);
       return;
@@ -52,16 +53,12 @@ export default function HomeScreen() {
       //   `http://10.212.62.23:3000/Tutorial?q=${query}`
       // );
       // const data = await response.json();
-      const results = await InstructionsSemanticSearchService.search(query, 5);
-      
-      const hits = results
-        .map((res) => res.result)
-        .filter((item) => 
-          item.title.toLowerCase().includes(query.toLowerCase()) || 
-          item.shortDescription.toLowerCase().includes(query.toLowerCase())
-        );
 
-      setInstructionSearchHits(hits);
+      // Note: using dummy semantic search service with fake data for now
+      const results = await TutorialSemanticSearchService.search(query, 5);
+      console.log(`Semantic search results for "${query}":`, results);
+
+      setInstructionSearchHits(results);
     } catch (error) {
       console.error(error);
     } finally {
@@ -116,14 +113,14 @@ export default function HomeScreen() {
       const formData = new FormData();
       const filePayload = {
         uri,
-        type: 'audio/m4a',
-        name: 'search_query.m4a',
+        type: "audio/m4a",
+        name: "search_query.m4a",
       } as any;
 
-      formData.append('file', filePayload);
+      formData.append("file", filePayload);
 
       const response = await fetch(`${API_URL}/tutorials/stt`, {
-        method: 'POST',
+        method: "POST",
         body: formData,
       });
 
@@ -171,15 +168,19 @@ export default function HomeScreen() {
       ) : (
         <FlatList
           data={instructionSearchHits}
-          keyExtractor={(item) => item.id}
-          ListEmptyComponent={<Text style={styles.empty}>No tutorials found.</Text>}
+          keyExtractor={(item) => item.tutorial.id}
+          ListEmptyComponent={
+            <Text style={styles.empty}>No tutorials found.</Text>
+          }
           renderItem={({ item }) => (
             <Pressable
               style={styles.card}
-              onPress={() => router.push(`/Tutorial/${item.id}`)}
+              onPress={() => router.push(`/Tutorial/${item.tutorial.id}`)}
             >
-              <Text style={styles.cardTitle}>{item.title}</Text>
-              <Text style={styles.cardSubtitle}>{item.shortDescription}</Text>
+              <Text style={styles.cardTitle}>{item.tutorial.title}</Text>
+              <Text style={styles.cardSubtitle}>
+                {item.tutorial.shortDescription}
+              </Text>
             </Pressable>
           )}
         />
@@ -206,8 +207,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 20,
   },
   searchInput: {
@@ -223,8 +224,8 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   micIcon: {
     fontSize: 20,

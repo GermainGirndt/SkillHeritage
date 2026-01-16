@@ -1,33 +1,33 @@
+import { DummyInstructionsApiClient } from "@/api/tutorial.api.client";
 import Tutorial from "@/models/ITutorial";
 
 /**
  * A single semantic-search hit. Keep this lightweight for list rendering.
  * Fetch the full Tutorial object separately via an InstructionsRepository.
  */
-export type InstructionsSearchHit = Pick<
-  Tutorial,
-  "id" | "title" | "shortDescription"
->;
-
-export interface ISemanticSearchServiceResult<Hit> {
-  result: Hit;
+export interface ITutorialSemanticSearchHit {
+  fileId: string;
+  filename: string;
   score: number;
+  tutorial: Tutorial;
 }
 
-export interface ISemanticSearchService<Hit> {
-  search(
-    query: string,
-    topK: number
-  ): Promise<ISemanticSearchServiceResult<Hit>[]>;
+export interface ITutorialSemanticSearchService {
+  search(query: string, topK: number): Promise<ITutorialSemanticSearchHit[]>;
 }
 
 class DummyInstructionsSemanticSearchService
-  implements ISemanticSearchService<InstructionsSearchHit>
+  implements ITutorialSemanticSearchService
 {
+  private tutorialApiClient: DummyInstructionsApiClient;
+
+  constructor() {
+    this.tutorialApiClient = new DummyInstructionsApiClient();
+  }
   async search(
     query: string,
     topK: number
-  ): Promise<ISemanticSearchServiceResult<InstructionsSearchHit>[]> {
+  ): Promise<ITutorialSemanticSearchHit[]> {
     if (query.trim() === "") {
       throw new Error("Query cannot be empty");
     }
@@ -36,29 +36,25 @@ class DummyInstructionsSemanticSearchService
       throw new Error("topK must be greater than 0");
     }
 
-    const firstResult: ISemanticSearchServiceResult<InstructionsSearchHit> = {
-      result: {
-        id: "instruction_1",
-        title: "How to change a car tire",
-        shortDescription:
-          "Learn how to change a car tire safely and efficiently.",
-      },
+    const firstResult: ITutorialSemanticSearchHit = {
+      fileId: "instruction_1",
+      filename: "how_to_change_a_car_tire.pdf",
+      tutorial: await this.tutorialApiClient.getById("instruction_1"),
       score: 0.95,
     };
 
-    const secondResult: ISemanticSearchServiceResult<InstructionsSearchHit> = {
-      result: {
-        id: "instruction_2",
-        title: "How to repair a car motor",
-        shortDescription:
-          "Learn the basics of repairing a car motor, starting with the ignition system.",
-      },
+    const secondResult: ITutorialSemanticSearchHit = {
+      fileId: "instruction_2",
+      filename: "car_maintenance_basics.pdf",
+      tutorial: await this.tutorialApiClient.getById("instruction_2"),
       score: 0.9,
     };
 
-    return [firstResult, secondResult].slice(0, topK);
+    const results = [firstResult, secondResult];
+
+    return results.slice(0, topK);
   }
 }
 
-export const InstructionsSemanticSearchService: ISemanticSearchService<InstructionsSearchHit> =
+export const TutorialSemanticSearchService: ITutorialSemanticSearchService =
   new DummyInstructionsSemanticSearchService();
