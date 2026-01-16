@@ -13,7 +13,7 @@ import { TutorialsService } from '../tutorial/services/tutorials.service';
 import { Tutorial } from '../tutorial/schemas/tutorial.schema';
 import { FileInterceptor } from '@nestjs/platform-express';
 
-interface IEnhancedTutorial {
+interface ISemanticSearchHit {
   fileId: string;
   filename: string;
   score: number;
@@ -31,7 +31,7 @@ export class SemanticSearchController {
   async searchTutorials(
     @Req() request: Request,
     @Res() response: Response,
-  ): Promise<IEnhancedTutorial[]> {
+  ): Promise<ISemanticSearchHit[]> {
     const { intent, max_num_results: maxNumResults } = request.query;
     console.log(
       `Receive search tutorials request with intent=${intent} and max_num_results=${maxNumResults}`,
@@ -86,7 +86,7 @@ export class SemanticSearchController {
     }
 
     // enhance with relevance score (sorted)
-    const enhancedTutorials: IEnhancedTutorial[] = vectorStoreFiles.flatMap(
+    const enhancedTutorials: ISemanticSearchHit[] = vectorStoreFiles.flatMap(
       (vectorStoreFile) => {
         {
           const { fileId, filename, score } = vectorStoreFile;
