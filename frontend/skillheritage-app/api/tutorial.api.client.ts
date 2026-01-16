@@ -14,10 +14,10 @@ export interface ITutorialApiClient {
  * Dummy Tutorial repository (details fetch).
  * In a real app, this would call your backend: GET /Tutorial/:id (and/or batch).
  */
-class DummyInstructionsApiClient implements ITutorialApiClient {
+class DummyTutorialsApiClient implements ITutorialApiClient {
   private readonly db: Record<string, ITutorial> = {
-    instruction_1: {
-      id: "instruction_1",
+    tutorial_1: {
+      id: "tutorial_1",
       // uploaded video data
       videoGridFsFileId: "gridfs_file_id-121426262",
       videoFileName: "change_car_tire.mp4",
@@ -49,8 +49,8 @@ class DummyInstructionsApiClient implements ITutorialApiClient {
       createdAt: new Date(),
       updatedAt: new Date(),
     },
-    instruction_2: {
-      id: "instruction_2",
+    tutorial_2: {
+      id: "tutorial_2",
       // uploaded video data
       videoGridFsFileId: "gridfs_file_id-121426263",
       videoFileName: "repair_car_motor.mp4",
@@ -100,7 +100,6 @@ class DummyInstructionsApiClient implements ITutorialApiClient {
   }
 }
 
-const InstructionsRepository: ITutorialApiClient =
-  new DummyInstructionsApiClient();
+const TutorialsRepository: ITutorialApiClient = new DummyTutorialsApiClient();
 
-export { DummyInstructionsApiClient, InstructionsRepository };
+export { DummyTutorialsApiClient, TutorialsRepository };

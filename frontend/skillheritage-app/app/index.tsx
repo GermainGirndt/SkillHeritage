@@ -19,15 +19,15 @@ import { Audio } from "expo-av";
 
 import {
   ITutorialSemanticSearchHit,
-  ITutorialSemanticSearchService,
-  TutorialSemanticSearchService,
-} from "@/domain/semantic-search/SemanticSearchService";
+  DummyTutorialsSemanticSearchAPIClient,
+  ITutorialsSemanticSearchAPIClient,
+} from "@/api/semantic-search.api.client";
 import AudioRecorder from "./AudioRecorder";
 
 export default function HomeScreen() {
   const router = useRouter();
   const [search, setSearch] = useState("");
-  const [instructionSearchHits, setInstructionSearchHits] = useState<
+  const [tutorialSearchHits, setInstructionSearchHits] = useState<
     ITutorialSemanticSearchHit[]
   >([]);
   const [loading, setLoading] = useState(false);
@@ -55,7 +55,10 @@ export default function HomeScreen() {
       // const data = await response.json();
 
       // Note: using dummy semantic search service with fake data for now
-      const results = await TutorialSemanticSearchService.search(query, 5);
+      const tutorialSemanticSearchAPIClient: ITutorialsSemanticSearchAPIClient =
+        new DummyTutorialsSemanticSearchAPIClient();
+
+      const results = await tutorialSemanticSearchAPIClient.search(query, 5);
       console.log(`Semantic search results for "${query}":`, results);
 
       setInstructionSearchHits(results);
@@ -167,7 +170,7 @@ export default function HomeScreen() {
         />
       ) : (
         <FlatList
-          data={instructionSearchHits}
+          data={tutorialSearchHits}
           keyExtractor={(item) => item.tutorial.id}
           ListEmptyComponent={
             <Text style={styles.empty}>No tutorials found.</Text>

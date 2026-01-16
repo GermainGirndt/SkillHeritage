@@ -1,28 +1,30 @@
-import { DummyInstructionsApiClient } from "@/api/tutorial.api.client";
+import { DummyTutorialsApiClient } from "@/api/tutorial.api.client";
 import Tutorial from "@/models/ITutorial";
+
+// Refactor to semantic-search.api.client.ts
 
 /**
  * A single semantic-search hit. Keep this lightweight for list rendering.
- * Fetch the full Tutorial object separately via an InstructionsRepository.
+ * Fetch the full Tutorial object separately via an TutorialsRepository.
  */
-export interface ITutorialSemanticSearchHit {
+interface ITutorialSemanticSearchHit {
   fileId: string;
   filename: string;
   score: number;
   tutorial: Tutorial;
 }
 
-export interface ITutorialSemanticSearchService {
+interface ITutorialsSemanticSearchAPIClient {
   search(query: string, topK: number): Promise<ITutorialSemanticSearchHit[]>;
 }
 
-class DummyInstructionsSemanticSearchService
-  implements ITutorialSemanticSearchService
+class DummyTutorialsSemanticSearchAPIClient
+  implements ITutorialsSemanticSearchAPIClient
 {
-  private tutorialApiClient: DummyInstructionsApiClient;
+  private tutorialApiClient: DummyTutorialsApiClient;
 
   constructor() {
-    this.tutorialApiClient = new DummyInstructionsApiClient();
+    this.tutorialApiClient = new DummyTutorialsApiClient();
   }
   async search(
     query: string,
@@ -37,16 +39,16 @@ class DummyInstructionsSemanticSearchService
     }
 
     const firstResult: ITutorialSemanticSearchHit = {
-      fileId: "instruction_1",
+      fileId: "tutorial_1",
       filename: "how_to_change_a_car_tire.pdf",
-      tutorial: await this.tutorialApiClient.getById("instruction_1"),
+      tutorial: await this.tutorialApiClient.getById("tutorial_1"),
       score: 0.95,
     };
 
     const secondResult: ITutorialSemanticSearchHit = {
-      fileId: "instruction_2",
+      fileId: "tutorial_2",
       filename: "car_maintenance_basics.pdf",
-      tutorial: await this.tutorialApiClient.getById("instruction_2"),
+      tutorial: await this.tutorialApiClient.getById("tutorial_2"),
       score: 0.9,
     };
 
@@ -56,5 +58,8 @@ class DummyInstructionsSemanticSearchService
   }
 }
 
-export const TutorialSemanticSearchService: ITutorialSemanticSearchService =
-  new DummyInstructionsSemanticSearchService();
+export {
+  ITutorialSemanticSearchHit,
+  ITutorialsSemanticSearchAPIClient,
+  DummyTutorialsSemanticSearchAPIClient,
+};
