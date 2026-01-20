@@ -11,6 +11,7 @@ import {
 import { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import { theme } from "../src/styles/theme";
+// import { API } from "../src/services/api";
 
 // Should we really use @react-native-voice? It just works in dev builds, not in Expo Go.
 // It think it's better to use the native microphone access from expo-audio or expo-camera
@@ -32,7 +33,11 @@ export default function HomeScreen() {
   const [isRecordingSearch, setIsRecordingSearch] = useState(false);
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
 
-  const API_URL = "http://10.212.51.177:3000";
+  // const API_URL = "http://10.212.51.177:3000";
+  // const API_URL = "http://192.168.0.35:3000";
+  // const API_URL = "http://10.208.69.172:3000";
+  const API_URL = "http://localhost:3000";
+  
 
   const fetchTutorials = async (query: string = "") => {
     setLoading(true);
@@ -89,6 +94,7 @@ export default function HomeScreen() {
       const formData = new FormData();
       formData.append("file", { uri, type: "audio/m4a", name: "search_query.m4a" } as any);
       const response = await fetch(`${API_URL}/tutorials/stt`, { method: "POST", body: formData });
+      // const response = await fetch(`${API.uploadVideo}/stt`, { method: "POST", body: formData  });
       const data = await response.json();
       if (data.text) setSearch(data.text);
     } catch (e) {

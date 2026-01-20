@@ -1,5 +1,6 @@
+// This screen handles video recording for both Web and Android platforms.
 import { View, Text, StyleSheet, Pressable, ActivityIndicator, Alert, Platform } from 'react-native';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
 import { theme } from '../src/styles/theme';
@@ -13,11 +14,16 @@ export default function RecordScreen() {
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   const [microphonePermission, requestMicrophonePermission] = useMicrophonePermissions();
   const cameraRef = useRef<CameraView | null>(null);
-
-  console.log(`Camera permission: ${cameraPermission?.status}, Microphone permission: ${microphonePermission?.status}`);
   
   const [recording, setRecording] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      await requestCameraPermission();
+      await requestMicrophonePermission();
+    })();
+  }, []);
 
   const startWebRecording = async () => {
     try {
@@ -32,7 +38,6 @@ export default function RecordScreen() {
       mediaRecorder.onstop = async () => {
         const videoBlob = new Blob(videoChunks, { type: 'video/mp4' });
         const videoUrl = URL.createObjectURL(videoBlob);
-        console.log("Web recording finished");
         await uploadVideo(videoUrl, videoBlob);
         stream.getTracks().forEach(track => track.stop());
       };
@@ -69,7 +74,7 @@ export default function RecordScreen() {
     } catch (err) {
       console.error("Mobile Recording Error:", err);
       setRecording(false);
-      Alert.alert("Error", "Recording failed. Check console.");
+      Alert.alert("Error", "Recording failed.");
     }
   };
 
@@ -80,7 +85,7 @@ export default function RecordScreen() {
     }
   };
 
-  const handleRecordPress = async () => {
+  const handleRecordPress = () => {
     if (Platform.OS === 'web') {
       recording ? stopWebRecording() : startWebRecording();
     } else {
@@ -99,34 +104,37 @@ export default function RecordScreen() {
     }
 
     try {
-      console.log("Sendind on server...");
+      console.log("Sending to server:", API.uploadVideo);
       const res = await fetch(API.uploadVideo, { method: 'POST', body: formData });
       const data = await res.json();
+      console.log("Server response:", data);
 
       if (res.ok && data.tutorialIdPrivate) {
         router.replace({
-          pathname: "/player",
+          pathname: "/Tutorial/[id]",
           params: { id: data.tutorialIdPrivate }
         });
       } else {
-        throw new Error("Upload failed");
+        throw new Error("Server did not return tutorialIdPrivate");
       }
     } catch (e) {
       console.error("Upload error:", e);
-      const msg = "The film wasn't saved.";
+      const msg = "Upload failed. Check server connection";
       Platform.OS === 'web' ? alert(msg) : Alert.alert("Error", msg);
     } finally {
       setIsUploading(false);
     }
   }
 
-  if (!cameraPermission || !microphonePermission) return <View />;
+  if (!cameraPermission || !microphonePermission) {
+    return <View style={styles.container} />;
+  }
   if (!cameraPermission.granted || !microphonePermission.granted) {
     return (
       <View style={styles.container}>
-        <Text style={{color: 'white', textAlign: 'center'}}>Permissions needed to proceed</Text>
-        <Pressable onPress={() => {requestCameraPermission(); requestMicrophonePermission();}}>
-            <Text style={{color: 'gold', marginTop: 20, textAlign: 'center'}}>Grant Permissions</Text>
+        <Text style={styles.permissionText}>Camera and microphone access is required.</Text>
+        <Pressable style={styles.permissionButton} onPress={() => { requestCameraPermission(); requestMicrophonePermission(); }}>
+          <Text style={styles.permissionButtonText}>Grant Permissions</Text>
         </Pressable>
       </View>
     );
@@ -135,17 +143,22 @@ export default function RecordScreen() {
   return (
     <View style={styles.container}>
       {Platform.OS === 'web' && !recording ? (
-        <View style={[styles.camera, {justifyContent: 'center', alignItems: 'center'}]}>
-             <Text style={{color: 'white'}}>Camera is ready </Text>
+        <View style={styles.webPlaceholder}>
+          <Text style={{color: 'white'}}>Web Camera Ready</Text>
         </View>
       ) : (
-        <CameraView ref={cameraRef} style={styles.camera} mode="video" />
+        <CameraView 
+          ref={cameraRef} 
+          style={styles.camera} 
+          mode="video"
+          facing="back"
+        />
       )}
       
       {isUploading && (
         <View style={styles.loadingOverlay}>
           <ActivityIndicator size="large" color="#fff" />
-          <Text style={{color: 'white', marginTop: 10}}>Uploading to AI server...</Text>
+          <Text style={{color: 'white', marginTop: 10}}>Uploading to server...</Text>
         </View>
       )}
 
@@ -160,8 +173,12 @@ export default function RecordScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#000' },
+  container: { flex: 1, backgroundColor: '#000', justifyContent: 'center' },
   camera: { flex: 1 },
+  webPlaceholder: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  permissionText: { color: 'white', textAlign: 'center', marginBottom: 20 },
+  permissionButton: { backgroundColor: 'gold', padding: 15, borderRadius: 10, alignSelf: 'center' },
+  permissionButtonText: { fontWeight: 'bold' },
   button: {
     position: 'absolute', bottom: 50, alignSelf: 'center',
     width: 80, height: 80, borderRadius: 40, borderWidth: 5,
@@ -171,7 +188,7 @@ const styles = StyleSheet.create({
   stopIcon: { width: 30, height: 30, backgroundColor: 'red', borderRadius: 5 },
   loadingOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.7)',
+    backgroundColor: 'rgba(0,0,0,0.8)',
     justifyContent: 'center', alignItems: 'center', zIndex: 200
   }
 });

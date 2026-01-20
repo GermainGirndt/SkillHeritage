@@ -1,4 +1,4 @@
-# SkillHeritage – Mobile App (Expo)
+# SkillHeritage – Mobile App (Expo Frontend)
 
 **Mobile frontend for the SkillHeritage project**, built with **Expo (React Native)**.  
 The app focuses on **video recording and playback** and is designed to work with a NestJS backend.
@@ -10,8 +10,13 @@ The app focuses on **video recording and playback** and is designed to work with
 - Video recording:
   - Android (real device)
   - Web (browser)
-- Video upload to backend
-- Video playback via streaming endpoint
+- Interactive Tutorial Player:
+  - Dynamic routing under `/Tutorial/[id]`.
+  - Video Timeline with a progress bar with dummy data prepared for backend.
+  - Tutorial Guide with dummy data for AI-generated text instructions.
+- Text Search to filter tutorials by title or content.
+  - Voice Search to find tutorials using the microphone not yet implemented.
+- Dark Mode UI
 - Prepared UI for future AI transcription & Tutorial search
 
 ---
@@ -30,24 +35,24 @@ The app focuses on **video recording and playback** and is designed to work with
 
 Make sure you have installed:
 
-- **Node.js** (v18 recommended)
+- **Node.js** (v18 or newer)
 - **npm**
-- **Expo CLI** (via `npx`)
-- **Expo Go** app on your Android phone
-- **Backend running on port 3000**
-- Android SDK (36.1)
+- **Expo Go** app installed on your Android device
+- **Backend server** running on port 3000
 
 ---
 
-## Setting Android SDK after Installation
+## Configuration
 
-Put into the .bashrc/.zshrc file:
+Before running on a real device, you **must** update the backend IP address to match your computer's local IP:
 
-```
-export ANDROID_HOME=$HOME/Library/Android/sdk
-export PATH=$PATH:$ANDROID_HOME/platform-tools
-export PATH=$PATH:$ANDROID_HOME/emulator
-```
+1. Open `app/index.tsx` and `app/Tutorial/[id].tsx`.
+2. Update the `API_URL` / `API_BASE` constant:
+   ```javascript
+   const API_URL = "http://<YOUR_LOCAL_IP>:3000";
+   ```
+
+````
 
 ## Installation
 
@@ -55,7 +60,7 @@ Install dependencies:
 
 ```bash
 npm install
-```
+````
 
 ## Running the App
 
@@ -64,19 +69,11 @@ npm install
 Start Expo with tunnel :
 
 ```bash
-npx expo start -c --tunnel
+npx expo start --tunnel
 ```
 
 #### Web (Browser)
 
 ```bash
-npx expo start
+npx expo start --web
 ```
-
-### Issues:
-
-- On Android, video recording works correctly
-
-- Video upload from Android currently fails due to a network request issue
-
-- Video upload works correctly on web (browser)
