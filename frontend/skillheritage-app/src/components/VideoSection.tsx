@@ -1,19 +1,23 @@
 // This component embeds and manages the video playback interface for a specific tutorial recording.
 import { View, Text, StyleSheet } from 'react-native';
-import { Video, ResizeMode } from 'expo-av';
+import { useVideoPlayer, VideoView } from 'expo-video';
 import { theme } from '../styles/theme';
-import { API } from '../services/api';
 
 type Props = { videoUri: string };
 
 export default function VideoSection({ videoUri }: Props) {
+  const player = useVideoPlayer(videoUri, (player) => {
+    player.loop = false;
+    player.play();
+  });
+
   return (
     <View style={styles.container}>
-      <Video
-        source={{ uri: videoUri }}
+      <VideoView
+        player={player}
         style={styles.video}
-        useNativeControls
-        resizeMode={ResizeMode.CONTAIN}
+        nativeControls={true}
+        contentFit="contain"
       />
       <Text style={styles.label}>Recording Player</Text>
     </View>
