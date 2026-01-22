@@ -9,6 +9,8 @@ import { Tutorial, TutorialDocument } from '../schemas/tutorial.schema';
 import { GridFSBucket } from 'mongodb';
 import { Readable } from 'stream';
 import { v4 as uuidv4 } from 'uuid';
+import OpenAI from 'openai';
+import { OpenAIClient } from '../../../shared/providers/openai.client';
 
 @Injectable()
 export class TutorialsService {
@@ -18,6 +20,7 @@ export class TutorialsService {
     @InjectModel(Tutorial.name)
     private readonly tutorialModel: Model<TutorialDocument>,
     @InjectConnection() private readonly connection: Connection,
+    private readonly openAiClient: OpenAIClient,
   ) {
     // Uses the same MongoDB database as your Mongoose connection
     this.bucket = new GridFSBucket(this.connection.db, {
@@ -138,5 +141,10 @@ export class TutorialsService {
 
       Readable.from(buffer).pipe(uploadStream);
     });
+  }
+  // private readonly openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+    async transcribeAudio(buffer: Buffer): Promise<string> {
+    return this.openAiClient.transcribe(buffer);
   }
 }

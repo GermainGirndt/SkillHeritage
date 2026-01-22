@@ -48,6 +48,23 @@ export class OpenAIClient {
     this.client = new OpenAI({ apiKey });
   }
 
+  // for audio transcibing, for voice search
+  async transcribe(buffer: Buffer): Promise<string> {
+    try {
+      const file = await OpenAI.toFile(buffer, 'search_audio.m4a');
+      
+      const response = await this.client.audio.transcriptions.create({
+        model: 'whisper-1',
+        file: file,
+      });
+
+      return response.text;
+    } catch (error) {
+      console.error('OpenAI Transcription error:', error);
+      return '';
+    }
+  }
+
   get sdk(): OpenAI {
     return this.client;
   }

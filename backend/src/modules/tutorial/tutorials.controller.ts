@@ -88,4 +88,11 @@ export class TutorialsController {
     console.log(`Received file: ${file?.originalname}, size: ${file?.size}`);
     return this.tutorialsService.createFromVideoUpload(file);
   }
+    @Post('stt')
+  @UseInterceptors(FileInterceptor('file'))
+  async speechToText(@UploadedFile() file: Express.Multer.File) {
+    console.log('Received audio for STT');
+    const text = await this.tutorialsService.transcribeAudio(file.buffer);
+    return { text };
+  }
 }

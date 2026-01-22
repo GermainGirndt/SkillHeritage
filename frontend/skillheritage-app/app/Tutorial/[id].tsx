@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator, Platf
 import { useState, useEffect } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { theme } from '@/src/styles/theme';
-import { TutorialsRepository } from '@/api/tutorial.api.client';
 import ITutorial from '@/models/ITutorial';
 import VideoSection from '@/src/components/VideoSection';
 
@@ -18,13 +17,26 @@ export default function TutorialDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'timeline' | 'manual'>('timeline');
   const [activeStepIndex, setActiveStepIndex] = useState(0);
+  const API_BASE = Platform.OS === 'web' ? "http://localhost:3000" : "http://10.21.192.177:3000";
 
   useEffect(() => {
+    let timer: NodeJS.Timeout;
     async function loadTutorial() {
       if (!id) return;
       try {
-        const data = await TutorialsRepository.getById(id as string);
+        // const data = await TutorialsRepository.getById(id as string);
+        console.log(`Fetching tutorial data from: ${API_BASE}/tutorials/${id}`);
+        const response = await fetch(`${API_BASE}/tutorials/${id}`);
+        
+        if (!response.ok) throw new Error("Tutorial not found on server");
+        
+        const data = await response.json();
         setTutorial(data);
+
+        // If processing is not complete, check again in 5 seconds
+        if (data.processingStatus !== 'completed') {
+            timer = setTimeout(loadTutorial, 5000);
+        }
       } catch (e) {
         console.error("Failed to load tutorial", e);
       } finally {
@@ -32,9 +44,10 @@ export default function TutorialDetailScreen() {
       }
     }
     loadTutorial();
+    return () => clearTimeout(timer);
   }, [id]);
 
-  if (loading) return (
+  if (loading && !tutorial) return (
     <View style={styles.centered}>
       <ActivityIndicator size="large" color={theme.colors.accentGold} />
       <Text style={{ color: 'white', marginTop: 10 }}>Loading tutorial...</Text>
@@ -56,11 +69,11 @@ export default function TutorialDetailScreen() {
         <Pressable onPress={() => router.back()}>
           <Text style={styles.backButton}>← Back</Text>
         </Pressable>
-        <Text style={styles.headerTitle} numberOfLines={1}>{tutorial.title}</Text>
+        <Text style={styles.headerTitle} numberOfLines={1}>{tutorial.title || "Processing..."}</Text>
       </View>
 
-      {/* Video Player Section using VideoSection with expo-video */}
-      <VideoSection videoUri={tutorial.videoUrl || 'https://d23dyxeqlo5psv.cloudfront.net/big_buck_bunny.mp4'} />
+      {/* Video section with dynamic stream URL */}
+      <VideoSection videoUri={`${API_BASE}/tutorials/${id}/video/stream`} />
 
       {/* Tabs to switch between Video Timeline and Text Guide */}
       <View style={styles.tabBar}>
@@ -79,21 +92,25 @@ export default function TutorialDetailScreen() {
       </View>
 
       <ScrollView style={styles.content}>
-        {activeTab === 'timeline' ? (
+        {tutorial.processingStatus !== 'completed' ? (
+           <View style={styles.statusBox}>
+               <ActivityIndicator color={theme.colors.accentGold} />
+               <Text style={styles.statusText}>✨ AI is generating your tutorial steps...</Text>
+               <Text style={styles.subStatusText}>This will take about a minute.</Text>
+           </View>
+        ) : activeTab === 'timeline' ? (
           <View>
-            {/* Visual progress tracker */}
             <View style={styles.progressSection}>
                 <ProgressBar 
-                    progress={tutorial.timelinedAudioTranscript.length > 0 
+                    progress={tutorial.timelinedAudioTranscript?.length > 0 
                         ? ((activeStepIndex + 1) / tutorial.timelinedAudioTranscript.length) * 100 
                         : 0}
-                    title={tutorial.timelinedAudioTranscript[activeStepIndex]?.text || "Introduction"}
+                    title={tutorial.timelinedAudioTranscript ? tutorial.timelinedAudioTranscript[activeStepIndex]?.text : "Introduction"}
                 />
             </View>
 
-            {/* List of timestamped tutorial steps */}
             <View style={styles.stepsList}>
-                {tutorial.timelinedAudioTranscript.map((item, index) => (
+                {tutorial.timelinedAudioTranscript?.map((item, index) => (
                     <StepItem 
                         key={index}
                         time={`${Math.floor(item.timestamp / 60)}:${Math.floor(item.timestamp % 60).toString().padStart(2, '0')}`}
@@ -106,7 +123,7 @@ export default function TutorialDetailScreen() {
             </View>
           </View>
         ) : (
-          /* AI-generated text instruction section */
+                    /* AI-generated text instruction section */
           <View style={styles.manualContainer}>
             <View style={styles.aiBadge}>
                 <Text style={styles.aiBadgeText}>GENERATED BY AI FROM VIDEO</Text>
@@ -141,6 +158,9 @@ const styles = StyleSheet.create({
   content: { flex: 1 },
   progressSection: { padding: 20, backgroundColor: theme.colors.card, marginBottom: 10 },
   stepsList: { padding: 20 },
+  statusBox: { padding: 40, alignItems: 'center' },
+  statusText: { color: '#fff', marginTop: 20, fontWeight: 'bold' },
+  subStatusText: { color: '#888', marginTop: 5, fontSize: 12 },
   manualContainer: { padding: 20 },
   aiBadge: { alignSelf: 'flex-start', backgroundColor: '#333', padding: 6, borderRadius: 4, marginBottom: 15, borderWidth: 1, borderColor: theme.colors.primary },
   aiBadgeText: { color: theme.colors.primary, fontSize: 10, fontWeight: 'bold' },

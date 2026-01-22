@@ -140,6 +140,12 @@ export class TutorialProcessingService {
         $set: {
           // audioTranscript: "...",
           // timelinedAudioTranscript: [...],
+          audioTranscript: "User recording about car engine maintenance.",
+          timelinedAudioTranscript: [
+            { order: 1, timestamp: 0, text: "Welcome to the tutorial session." },
+            { order: 2, timestamp: 12, text: "First step involves checking the oil dipstick." },
+            { order: 3, timestamp: 35, text: "Next, ensure the cap is tightened securely." }
+          ],
           processingStatus: TutorialStatus.READY_FOR_LLM_PROCESSING,
         },
       },
@@ -158,9 +164,21 @@ export class TutorialProcessingService {
     //    - ...
     // via LLM
 
-    await this.setStatus(
-      tutorial._id.toString(),
-      TutorialStatus.READY_FOR_VECTOR_STORE_STORAGE,
+      // await this.setStatus(
+      // tutorial._id.toString(),
+      // TutorialStatus.READY_FOR_VECTOR_STORE_STORAGE,
+      // );
+
+    await this.tutorialModel.updateOne(
+      { _id: tutorial._id },
+      {
+        $set: {
+          title: "New Recording Tutorial",
+          shortDescription: "Automatically generated description for your recent workshop recording.",
+          structuredInstructions: "1. Prepare your workspace.\n2. Follow the recorded video steps.\n3. Complete the maintenance task.",
+          processingStatus: TutorialStatus.COMPLETED,
+        },
+      },
     );
   }
 
