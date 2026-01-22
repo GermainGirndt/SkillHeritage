@@ -1,11 +1,11 @@
 // This screen displays the detailed view of a tutorial, including video playback, a timestamped timeline, and AI-generated instructions.
-import { View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator, Platform } from 'react-native';
 import { useState, useEffect } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Video, ResizeMode } from 'expo-av';
 import { theme } from '@/src/styles/theme';
 import { TutorialsRepository } from '@/api/tutorial.api.client';
 import ITutorial from '@/models/ITutorial';
+import VideoSection from '@/src/components/VideoSection';
 
 import ProgressBar from '@/src/components/ProgressBar';
 import StepItem from '@/src/components/StepItem';
@@ -59,15 +59,8 @@ export default function TutorialDetailScreen() {
         <Text style={styles.headerTitle} numberOfLines={1}>{tutorial.title}</Text>
       </View>
 
-      {/* Video Player Section */}
-      <View style={styles.videoContainer}>
-        <Video
-          source={{ uri: tutorial.videoUrl || 'https://d23dyxeqlo5psv.cloudfront.net/big_buck_bunny.mp4' }}
-          style={styles.video}
-          useNativeControls
-          resizeMode={ResizeMode.CONTAIN}
-        />
-      </View>
+      {/* Video Player Section using VideoSection with expo-video */}
+      <VideoSection videoUri={tutorial.videoUrl || 'https://d23dyxeqlo5psv.cloudfront.net/big_buck_bunny.mp4'} />
 
       {/* Tabs to switch between Video Timeline and Text Guide */}
       <View style={styles.tabBar}>
@@ -140,8 +133,6 @@ const styles = StyleSheet.create({
   header: { padding: 20, paddingTop: 60, backgroundColor: '#000', flexDirection: 'row', alignItems: 'center' },
   backButton: { color: '#fff', fontSize: 16, marginRight: 15 },
   headerTitle: { color: theme.colors.accentGold, fontSize: 16, fontWeight: 'bold', flex: 1 },
-  videoContainer: { width: '100%', height: 230, backgroundColor: '#000' },
-  video: { width: '100%', height: '100%' },
   tabBar: { flexDirection: 'row', backgroundColor: theme.colors.card, borderBottomWidth: 1, borderBottomColor: '#333' },
   tab: { flex: 1, padding: 15, alignItems: 'center', borderBottomWidth: 3, borderBottomColor: 'transparent' },
   activeTab: { borderBottomColor: theme.colors.primary },
@@ -159,8 +150,16 @@ const styles = StyleSheet.create({
   fab: {
     position: "absolute", right: 24, bottom: 24, width: 60, height: 60, borderRadius: 30,
     backgroundColor: theme.colors.primary, alignItems: "center", justifyContent: "center",
-    elevation: 8, shadowColor: "#000", shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3, shadowRadius: 4,
+    elevation: 8,
+    ...Platform.select({
+      web: { boxShadow: '0px 4px 4px rgba(0,0,0,0.3)' },
+      default: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+      }
+    })
   },
   fabText: { color: "#fff", fontSize: 32, fontWeight: '300' },
 });

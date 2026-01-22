@@ -7,6 +7,7 @@ import {
   FlatList,
   ActivityIndicator,
   Alert,
+  Platform,
 } from "react-native";
 import { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
@@ -16,7 +17,7 @@ import { theme } from "../src/styles/theme";
 // Should we really use @react-native-voice? It just works in dev builds, not in Expo Go.
 // It think it's better to use the native microphone access from expo-audio or expo-camera
 // and then convert it into text via an API call to the backend (or locally using Whisper).
-import { Audio } from "expo-av";
+import { useAudioRecorder, AudioModule } from "expo-audio";
 
 import {
   ITutorialSemanticSearchHit,
@@ -31,12 +32,24 @@ export default function HomeScreen() {
   const [tutorialSearchHits, setTutorialSearchHits] = useState<ITutorialSemanticSearchHit[]>([]);
   const [loading, setLoading] = useState(false);
   const [isRecordingSearch, setIsRecordingSearch] = useState(false);
-  const [recording, setRecording] = useState<Audio.Recording | null>(null);
+  
+  const recorder = useAudioRecorder({
+    extension: ".m4a",
+    sampleRate: 44100,
+    numberOfChannels: 1,
+    bitRate: 128000,
+    android: {
+      outputFormat: "mpeg_4",
+      audioEncoder: "aac",
+    },
+    ios: {
+      outputFormat: "mpeg4aac",
+      audioQuality: "high",
+    },
+  } as any);
 
-  // const API_URL = "http://10.212.51.177:3000";
-  // const API_URL = "http://192.168.0.35:3000";
-  // const API_URL = "http://10.208.69.172:3000";
   const API_URL = "http://localhost:3000";
+  // const API_URL = "http://10.212.54.167:3000";
   
 
   const fetchTutorials = async (query: string = "") => {
@@ -69,23 +82,32 @@ export default function HomeScreen() {
 
   const startRecordingSearch = async () => {
     try {
-      const permission = await Audio.requestPermissionsAsync();
+      const permission = await AudioModule.requestRecordingPermissionsAsync();
       if (permission.status === "granted") {
-        await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
-        const { recording } = await Audio.Recording.createAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
-        setRecording(recording);
         setIsRecordingSearch(true);
+        await recorder.prepareToRecordAsync();
+        recorder.record();
       }
-    } catch (err) { console.error(err); }
+    } catch (err) { 
+      console.error(err); 
+      setIsRecordingSearch(false);
+    }
   };
 
   const stopRecordingSearch = async () => {
-    setIsRecordingSearch(false);
-    if (!recording) return;
-    await recording.stopAndUnloadAsync();
-    const uri = recording.getURI();
-    setRecording(null);
-    if (uri) handleTranscription(uri);
+    if (!recorder.isRecording) {
+      setIsRecordingSearch(false);
+      return;
+    }
+    
+    try {
+      setIsRecordingSearch(false);
+      await recorder.stop();
+      const uri = recorder.uri;
+      if (uri) handleTranscription(uri);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleTranscription = async (uri: string) => {
@@ -115,7 +137,10 @@ export default function HomeScreen() {
           onChangeText={setSearch}
         />
         <Pressable
-          style={[styles.micButton, isRecordingSearch && { backgroundColor: "#ff4444" }]}
+          style={[
+            styles.micButton,
+            isRecordingSearch && { backgroundColor: "#ff4444" },
+          ]}
           onPressIn={startRecordingSearch}
           onPressOut={stopRecordingSearch}
         >
@@ -158,9 +183,43 @@ const styles = StyleSheet.create({
   micButton: { backgroundColor: theme.colors.primary, width: 50, height: 50, borderRadius: 25, justifyContent: "center", alignItems: "center" },
   micIcon: { fontSize: 20 },
   empty: { color: theme.colors.textSecondary, textAlign: "center", marginTop: 40 },
-  card: { backgroundColor: theme.colors.card, borderRadius: 12, padding: 16, marginBottom: 12 },
+  card: { 
+    backgroundColor: theme.colors.card, 
+    borderRadius: 12, 
+    padding: 16, 
+    marginBottom: 12,
+    ...Platform.select({
+      web: { boxShadow: '0px 2px 4px rgba(0,0,0,0.3)' },
+      default: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+      }
+    })
+  },
   cardTitle: { color: theme.colors.textMain, fontSize: 16, fontWeight: "600" },
   cardSubtitle: { color: theme.colors.textSecondary, marginTop: 8 },
-  fab: { position: "absolute", right: 24, bottom: 24, width: 60, height: 60, borderRadius: 30, backgroundColor: theme.colors.primary, alignItems: "center", justifyContent: "center" },
+  fab: { 
+    position: "absolute", 
+    right: 24, 
+    bottom: 24, 
+    width: 60, 
+    height: 60, 
+    borderRadius: 30, 
+    backgroundColor: theme.colors.primary, 
+    alignItems: "center", 
+    justifyContent: "center",
+    elevation: 8,
+    ...Platform.select({
+      web: { boxShadow: '0px 4px 8px rgba(0,0,0,0.4)' },
+      default: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+      }
+    })
+  },
   fabText: { color: "#fff", fontSize: 32 },
 });
