@@ -68,8 +68,8 @@
           "isAccessMediaLocationEnabled": true
         }
       ],
-      "@react-native-voice/voice",
-      "expo-video"
+      "expo-video",
+      "expo-asset"
     ]
   }
 }
