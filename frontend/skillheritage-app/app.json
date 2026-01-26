@@ -69,7 +69,8 @@
         }
       ],
       "expo-video",
-      "expo-asset"
+      "expo-asset",
+      "expo-audio"
     ]
   }
 }
