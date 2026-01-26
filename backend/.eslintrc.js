@@ -1,16 +1,19 @@
 module.exports = {
   parser: '@typescript-eslint/parser',
   parserOptions: {
-    project: 'tsconfig.json',
+    project: './tsconfig.json',
     tsconfigRootDir: __dirname,
     sourceType: 'module',
   },
   plugins: ['@typescript-eslint/eslint-plugin'],
   extends: [
+    'expo',
     'plugin:@typescript-eslint/recommended',
     'plugin:prettier/recommended',
   ],
   root: true,
+  ecmaFeatures: { jsx: true },
+  ecmaVersion: 'latest',
   env: {
     node: true,
     jest: true,
