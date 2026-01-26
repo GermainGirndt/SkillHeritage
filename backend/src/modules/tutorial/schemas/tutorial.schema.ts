@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
+import { TutorialProcessingStatus } from '../jobs/tutorial-status';
 
 export type TutorialDocument = HydratedDocument<Tutorial>;
 
@@ -94,7 +95,7 @@ export class Tutorial {
     default: 'uploaded',
     index: true,
   })
-  processingStatus: string;
+  processingStatus: TutorialProcessingStatus;
 
   @Prop({ type: Number, default: 0 })
   processingAttempts?: number;

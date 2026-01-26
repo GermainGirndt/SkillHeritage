@@ -4,7 +4,7 @@ import OpenAI from 'openai';
 
 interface ISearchVectorStoreParams {
   intent: string;
-  maxNumResults?: number;
+  topK?: number;
 }
 
 interface SearchHit {
@@ -52,7 +52,7 @@ export class OpenAIClient {
   async transcribe(buffer: Buffer): Promise<string> {
     try {
       const file = await OpenAI.toFile(buffer, 'search_audio.m4a');
-      
+
       const response = await this.client.audio.transcriptions.create({
         model: 'whisper-1',
         file: file,
@@ -71,18 +71,18 @@ export class OpenAIClient {
 
   async searchInVectorStore({
     intent,
-    maxNumResults = 5,
+    topK = 5,
   }: ISearchVectorStoreParams): Promise<SearchHit[]> {
     const page = await this.client.vectorStores.search(this.vectorStoreId, {
       query: intent,
-      max_num_results: maxNumResults,
+      max_num_results: topK,
     });
 
     const results: SearchHit[] = [];
 
-    while (results.length < maxNumResults) {
+    while (results.length < topK) {
       page.data.forEach((item) => {
-        if (results.length >= maxNumResults) {
+        if (results.length >= topK) {
           return;
         }
 

@@ -1,9 +1,22 @@
 // everything related to a tutorial
 // it should come from the backend
+
+export const TutorialStatus = {
+  UPLOADED: "uploaded",
+  READY_TO_TRANSCRIBE: "ready_to_transcribe",
+  READY_FOR_LLM_PROCESSING: "ready_for_llm_processing",
+  READY_FOR_VECTOR_STORE_STORAGE: "ready_for_vector_store_storage",
+  COMPLETED: "completed",
+  FAILED: "failed",
+} as const;
+
+export type TutorialProcessingStatus =
+  (typeof TutorialStatus)[keyof typeof TutorialStatus];
+
 interface ITutorial {
-  id: string;
+  _id: string;
   videoUrl?: string;
-  processingStatus: 'uploaded' | 'transcribing' | 'completed' | 'failed';
+  processingStatus: TutorialProcessingStatus;
   // uploaded video data
   videoFileName: string;
   videoGridFsFileId: string; // file id for video file in the database (GridFS format chunks)

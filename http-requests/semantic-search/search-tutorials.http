@@ -2,6 +2,6 @@
 
 @baseUrl = http://localhost:3000
 @intent = mechanical service
-@max_num_results = 10
+@top_k = 10
 
-GET {{baseUrl}}/semantic-search/tutorials?intent={{intent}}&max_num_results={{max_num_results}}
+GET {{baseUrl}}/semantic-search/tutorials?intent={{intent}}&top_k={{top_k}}

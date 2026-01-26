@@ -17,11 +17,11 @@ export interface ITutorialApiClient {
 class DummyTutorialsApiClient implements ITutorialApiClient {
   private readonly db: Record<string, ITutorial> = {
     tutorial_1: {
-      id: "tutorial_1",
+      _id: "tutorial_1",
       // uploaded video data
       videoGridFsFileId: "gridfs_file_id-121426262",
       videoFileName: "change_car_tire.mp4",
-            processingStatus: 'completed',
+      processingStatus: "completed",
       // audio transcript (speech2text)
       audioTranscript: "To change a car tire, first loosen the lug nuts...",
       timelinedAudioTranscript: [
@@ -51,12 +51,12 @@ class DummyTutorialsApiClient implements ITutorialApiClient {
       updatedAt: new Date(),
     },
     tutorial_2: {
-      id: "tutorial_2",
+      _id: "tutorial_2",
       // uploaded video data
       videoGridFsFileId: "gridfs_file_id-121426263",
       videoFileName: "repair_car_motor.mp4",
       // audio transcript (speech2text)
-            processingStatus: 'completed',
+      processingStatus: "completed",
       audioTranscript:
         "To repair a car motor, start by checking the ignition system...",
       timelinedAudioTranscript: [

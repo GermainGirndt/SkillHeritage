@@ -1,5 +1,6 @@
 import { DummyTutorialsApiClient } from "@/api/tutorial.api.client";
 import Tutorial from "@/models/ITutorial";
+import axios from "axios";
 
 // Refactor to semantic-search.api.client.ts
 
@@ -7,43 +8,97 @@ import Tutorial from "@/models/ITutorial";
  * A single semantic-search hit. Keep this lightweight for list rendering.
  * Fetch the full Tutorial object separately via an TutorialsRepository.
  */
-export interface ITutorialSemanticSearchHit {
+interface ITutorialSemanticSearchHit {
   fileId: string;
   filename: string;
   score: number;
   tutorial: Tutorial;
 }
 
-export interface ITutorialsSemanticSearchAPIClient {
-  search(query: string, topK: number): Promise<ITutorialSemanticSearchHit[]>;
+interface ITutorialsSemanticSearchAPIClient {
+  search(intent: string, topK: number): Promise<ITutorialSemanticSearchHit[]>;
 }
 
-export class DummyTutorialsSemanticSearchAPIClient implements ITutorialsSemanticSearchAPIClient {
+class DummyTutorialsSemanticSearchAPIClient implements ITutorialsSemanticSearchAPIClient {
   private tutorialApiClient: DummyTutorialsApiClient;
 
   constructor() {
     this.tutorialApiClient = new DummyTutorialsApiClient();
   }
 
-  async search(query: string, topK: number): Promise<ITutorialSemanticSearchHit[]> {
-    if (query.trim() === "") {
+  async search(
+    intent: string,
+    topK: number,
+  ): Promise<ITutorialSemanticSearchHit[]> {
+    if (intent.trim() === "") {
       return [];
     }
 
     const allTutorials = await this.tutorialApiClient.list(100);
 
-    const filteredTutorials = allTutorials.filter(t => 
-      t.title.toLowerCase().includes(query.toLowerCase()) || 
-      t.shortDescription.toLowerCase().includes(query.toLowerCase())
+    const filteredTutorials = allTutorials.filter(
+      (t) =>
+        t.title.toLowerCase().includes(intent.toLowerCase()) ||
+        t.shortDescription.toLowerCase().includes(intent.toLowerCase()),
     );
 
-    const results: ITutorialSemanticSearchHit[] = filteredTutorials.map(t => ({
-      fileId: t.id,
-      filename: t.videoFileName,
-      tutorial: t,
-      score: 1.0
-    }));
+    const results: ITutorialSemanticSearchHit[] = filteredTutorials.map(
+      (t) => ({
+        fileId: t.id,
+        filename: t.videoFileName,
+        tutorial: t,
+        score: 1.0,
+      }),
+    );
 
     return results.slice(0, topK);
   }
 }
+
+class TutorialsSemanticSearchAPIClient implements ITutorialsSemanticSearchAPIClient {
+  private readonly baseUrl = "http://localhost:3000";
+
+  async search(
+    intent: string,
+    topK: number,
+  ): Promise<ITutorialSemanticSearchHit[]> {
+    if (intent.trim() === "") {
+      return [];
+    }
+
+    const response = await axios.get(
+      `${this.baseUrl}/semantic-search/tutorials`,
+      {
+        params: {
+          intent,
+          topK,
+        },
+      },
+    );
+
+    /**
+     * Expected backend response example:
+     * [
+     *   {
+     *     fileId: "123",
+     *     filename: "engine_repair.mp4",
+     *     score: 0.92,
+     *     tutorial: { ... }
+     *   }
+     * ]
+     */
+    return response.data.map((hit: any) => ({
+      fileId: hit.fileId,
+      filename: hit.filename,
+      score: hit.score,
+      tutorial: hit.tutorial as Tutorial,
+    }));
+  }
+}
+
+export {
+  ITutorialSemanticSearchHit,
+  ITutorialsSemanticSearchAPIClient,
+  DummyTutorialsSemanticSearchAPIClient,
+  TutorialsSemanticSearchAPIClient,
+};

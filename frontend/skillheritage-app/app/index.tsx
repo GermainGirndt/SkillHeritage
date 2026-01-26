@@ -23,6 +23,7 @@ import {
   ITutorialSemanticSearchHit,
   DummyTutorialsSemanticSearchAPIClient,
   ITutorialsSemanticSearchAPIClient,
+  TutorialsSemanticSearchAPIClient,
 } from "@/api/semantic-search.api.client";
 import AudioRecorder from "./AudioRecorder";
 
@@ -57,6 +58,7 @@ export default function HomeScreen() {
     },
   });
 
+  // TODO  - Gosia: Replace with API client
   const API_URL = "http://localhost:3000";
   // const API_URL = "http://10.212.54.167:3000";
 
@@ -70,8 +72,12 @@ export default function HomeScreen() {
     }
 
     try {
+      /* const apiClient: ITutorialsSemanticSearchAPIClient =
+        new DummyTutorialsSemanticSearchAPIClient(); */
+
       const apiClient: ITutorialsSemanticSearchAPIClient =
-        new DummyTutorialsSemanticSearchAPIClient();
+        new TutorialsSemanticSearchAPIClient();
+
       const results = await apiClient.search(query, 5);
       setTutorialSearchHits(results);
     } catch (error) {
@@ -174,14 +180,14 @@ export default function HomeScreen() {
       ) : (
         <FlatList
           data={tutorialSearchHits}
-          keyExtractor={(item) => item.tutorial.id}
+          keyExtractor={(item) => item.tutorial._id}
           ListEmptyComponent={
             <Text style={styles.empty}>No tutorials found.</Text>
           }
           renderItem={({ item }) => (
             <Pressable
               style={styles.card}
-              onPress={() => router.push(`/Tutorial/${item.tutorial.id}`)}
+              onPress={() => router.push(`/Tutorial/${item.tutorial._id}`)}
             >
               <Text style={styles.cardTitle}>{item.tutorial.title}</Text>
               <Text style={styles.cardSubtitle}>

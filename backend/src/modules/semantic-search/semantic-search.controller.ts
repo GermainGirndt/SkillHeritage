@@ -1,7 +1,10 @@
 import {
+  BadRequestException,
   Controller,
   Get,
+  InternalServerErrorException,
   Post,
+  Query,
   Req,
   Res,
   UploadedFile,
@@ -29,42 +32,38 @@ export class SemanticSearchController {
 
   @Get('tutorials')
   async searchTutorials(
-    @Req() request: Request,
-    @Res() response: Response,
+    @Query('intent') intent: string,
+    @Query('top_k') topK: string,
   ): Promise<ISemanticSearchHit[]> {
-    const { intent, max_num_results: maxNumResults } = request.query;
     console.log(
-      `Receive search tutorials request with intent=${intent} and max_num_results=${maxNumResults}`,
+      `Receive search tutorials request with intent=${intent} and max_num_results=${topK}`,
     );
 
     if (typeof intent !== 'string' || intent.trim() === '') {
-      response.status(400).json({
-        error:
-          'Query parameter "intent" is required and must be a non-empty string.',
-      });
-      return;
+      throw new BadRequestException(
+        'Query parameter "intent" is required and must be a non-empty string.',
+      );
     }
 
     if (
-      typeof maxNumResults !== 'undefined' &&
-      typeof maxNumResults !== 'number' &&
-      typeof maxNumResults === 'string' &&
-      isNaN(Number(maxNumResults))
+      typeof topK !== 'undefined' &&
+      typeof topK !== 'number' &&
+      typeof topK === 'string' &&
+      isNaN(Number(topK))
     ) {
-      response.status(400).json({
-        error: `Query parameter "max_num_results" must be either a number or undefined. Received: ${maxNumResults} of type ${typeof maxNumResults}`,
-      });
-      return;
+      throw new BadRequestException(
+        `Query parameter "top_k" must be either a number or undefined. Received: ${topK} of type ${typeof topK}`,
+      );
     }
 
-    const maxNumResultsParsed: number | undefined =
-      typeof maxNumResults === 'undefined' ? undefined : Number(maxNumResults);
+    const topKParsed: number | undefined =
+      typeof topK === 'undefined' ? undefined : Number(topK);
 
     console.log('Calling semantic search service...');
     const { files: vectorStoreFiles } =
       await this.semanticSearchService.searchInVectorStore({
         intent,
-        maxNumResults: maxNumResultsParsed,
+        topK: topKParsed,
       });
     console.log(
       'Received files from semantic search service:',
@@ -121,26 +120,22 @@ export class SemanticSearchController {
   @UseInterceptors(FileInterceptor('transcriptFile'))
   async storeTutorialTranscriptIntoVectorStore(
     @UploadedFile() transcriptFile: Express.Multer.File,
-    @Res() response: Response,
   ): Promise<void> {
     console.log(
       `Received request to store tutorial transcript in vector store for file: ${transcriptFile}`,
     );
 
     if (!transcriptFile) {
-      response.status(400).json({
-        error: 'Request must contain a file field named "transcriptFile".',
-      });
-      return;
+      throw new BadRequestException(
+        'Request must contain a file field named "transcriptFile".',
+      );
     }
 
     // Validate transcript file is a file
     if (!transcriptFile.buffer || !Buffer.isBuffer(transcriptFile.buffer)) {
-      response.status(400).json({
-        error: `"transcriptFile" must include a file buffer (memory storage).`,
-        got: transcriptFile,
-      });
-      return;
+      throw new BadRequestException(
+        `"transcriptFile" must include a file buffer (memory storage). Received: ${transcriptFile}`,
+      );
     }
 
     try {
@@ -159,15 +154,15 @@ export class SemanticSearchController {
         'Successfully stored tutorial transcript in vector store:',
         storeResponse,
       );
-      response.status(200).json(storeResponse);
+      return;
     } catch (error) {
       console.error(
         'Error storing tutorial transcript in vector store:',
         error,
       );
-      response.status(500).json({
-        error: 'Failed to store tutorial transcript in vector store.',
-      });
+      throw new InternalServerErrorException(
+        'Failed to store tutorial transcript in vector store.',
+      );
     }
   }
 }

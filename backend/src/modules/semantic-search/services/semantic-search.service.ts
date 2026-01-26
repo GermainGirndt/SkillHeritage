@@ -3,7 +3,7 @@ import { OpenAIClient } from 'src/shared/providers/openai.client';
 
 interface IFindTutorialsRequest {
   intent: string;
-  maxNumResults?: number;
+  topK?: number;
 }
 
 interface IFindTutorialsResponse {
@@ -27,7 +27,7 @@ export class SemanticSearchService {
 
   async searchInVectorStore({
     intent,
-    maxNumResults,
+    topK = 5, // Default to 5 results if not specified
   }: IFindTutorialsRequest): Promise<IFindTutorialsResponse> {
     if (!intent || intent.trim() === '') {
       throw new BadRequestException(
@@ -35,19 +35,13 @@ export class SemanticSearchService {
       );
     }
 
-    if (maxNumResults !== undefined && isNaN(Number(maxNumResults))) {
-      throw new BadRequestException(
-        'Parameter "maxNumResults" must be a number.',
-      );
-    }
-
-    if (!maxNumResults) {
-      maxNumResults = 5; // Default to 5 results if not specified
+    if (topK !== undefined && isNaN(Number(topK))) {
+      throw new BadRequestException('Parameter "topKParsed" must be a number.');
     }
 
     const searchHits = await this.openAIClient.searchInVectorStore({
       intent,
-      maxNumResults,
+      topK,
     });
     console.log('Received response from vector store search:', searchHits);
     // parse and validate response
