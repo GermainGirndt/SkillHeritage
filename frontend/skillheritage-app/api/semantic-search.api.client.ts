@@ -44,7 +44,7 @@ class DummyTutorialsSemanticSearchAPIClient implements ITutorialsSemanticSearchA
 
     const results: ITutorialSemanticSearchHit[] = filteredTutorials.map(
       (t) => ({
-        fileId: t.id,
+        fileId: t._id,
         filename: t.videoFileName,
         tutorial: t,
         score: 1.0,
