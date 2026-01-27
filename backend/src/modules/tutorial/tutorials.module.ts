@@ -8,6 +8,7 @@ import { TutorialProcessingJob } from './jobs/tutorial-processing.job';
 import { TutorialsVideoService } from './services/tutorials-video.service';
 import { SemanticSearchService } from '../semantic-search/services/semantic-search.service';
 import { OpenAIClient } from 'src/shared/providers/openai.client';
+import { TranscriptionService } from '../transcription/services/transcription.service';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { OpenAIClient } from 'src/shared/providers/openai.client';
     OpenAIClient,
     SemanticSearchService,
     TutorialProcessingJob,
+    TranscriptionService
   ],
   exports: [TutorialsService],
 })

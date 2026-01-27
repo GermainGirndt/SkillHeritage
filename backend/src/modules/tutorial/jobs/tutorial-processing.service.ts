@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { Tutorial, TutorialDocument } from '../schemas/tutorial.schema';
 import { TutorialStatus } from './tutorial-status';
 import { SemanticSearchService } from 'src/modules/semantic-search/services/semantic-search.service';
+import { TranscriptionService } from 'src/modules/transcription/services/transcription.service';
 
 @Injectable()
 export class TutorialProcessingService {
@@ -13,7 +14,8 @@ export class TutorialProcessingService {
     @InjectModel(Tutorial.name)
     private readonly tutorialModel: Model<TutorialDocument>,
     private semanticSearchService: SemanticSearchService,
-  ) {}
+    private transcriptionService: TranscriptionService
+  ) { }
 
   /**
    * Fetch a batch of tutorials that are not completed.
@@ -127,25 +129,17 @@ export class TutorialProcessingService {
    * ready_to_transcribe -> ready_for_llm_processing
    */
   private async stepTranscribe(tutorial: TutorialDocument) {
-    // TODO: (Katharina)
-    // - call transcription service
-    //    - store audioTranscript
-    //    - store timelinedAudioTranscript
-    //    - ...
-    // in tutorial document
-
+    var transcription = await this.transcriptionService.transcribe(tutorial.videoGridFsFileId)
+    var stamps = []
+    for (let i = 0; i < transcription.segments.length; i++) {
+      stamps.push({ order: i, timestamp: transcription.segments[i].start, text: transcription.segments[i].text })
+    }
     await this.tutorialModel.updateOne(
       { _id: tutorial._id },
       {
         $set: {
-          // audioTranscript: "...",
-          // timelinedAudioTranscript: [...],
-          audioTranscript: "User recording about car engine maintenance.",
-          timelinedAudioTranscript: [
-            { order: 1, timestamp: 0, text: "Welcome to the tutorial session." },
-            { order: 2, timestamp: 12, text: "First step involves checking the oil dipstick." },
-            { order: 3, timestamp: 35, text: "Next, ensure the cap is tightened securely." }
-          ],
+          audioTranscript: transcription.text,
+          timelinedAudioTranscript: stamps,
           processingStatus: TutorialStatus.READY_FOR_LLM_PROCESSING,
         },
       },
@@ -164,10 +158,10 @@ export class TutorialProcessingService {
     //    - ...
     // via LLM
 
-      // await this.setStatus(
-      // tutorial._id.toString(),
-      // TutorialStatus.READY_FOR_VECTOR_STORE_STORAGE,
-      // );
+    // await this.setStatus(
+    // tutorial._id.toString(),
+    // TutorialStatus.READY_FOR_VECTOR_STORE_STORAGE,
+    // );
 
     await this.tutorialModel.updateOne(
       { _id: tutorial._id },

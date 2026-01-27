@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
+import { TranscriptionSegment } from 'openai/resources/audio/transcriptions';
 
 interface ISearchVectorStoreParams {
   intent: string;
@@ -21,6 +22,11 @@ interface IStoreFileInVectorStoreResponse {
   fileId: string;
   filename: string;
   createdAt: string;
+}
+
+interface TranscriptionResponse {
+  text: string;
+  segments: TranscriptionSegment[];
 }
 
 @Injectable()
@@ -49,10 +55,8 @@ export class OpenAIClient {
   }
 
   // for audio transcibing, for voice search
-  async transcribe(buffer: Buffer): Promise<string> {
+  async transcribe(file): Promise<string> {
     try {
-      const file = await OpenAI.toFile(buffer, 'search_audio.m4a');
-      
       const response = await this.client.audio.transcriptions.create({
         model: 'whisper-1',
         file: file,
@@ -64,6 +68,23 @@ export class OpenAIClient {
       return '';
     }
   }
+
+  async getTimestamps(file): Promise<TranscriptionResponse> {
+    try {
+      const response = await this.client.audio.transcriptions.create({
+        model: 'whisper-1',
+        file: file,
+        response_format: 'verbose_json',
+        timestamp_granularities: ['segment'],
+      });
+
+      return { text: response.text, segments: response.segments }
+    } catch (error) {
+      console.error('OpenAI Transcription error:', error);
+      return null;
+    }
+  }
+
 
   get sdk(): OpenAI {
     return this.client;
