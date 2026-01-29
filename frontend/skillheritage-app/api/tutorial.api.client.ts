@@ -1,4 +1,5 @@
 import ITutorial from "@/models/ITutorial";
+import { Platform } from 'react-native'; 
 
 /**
  * Separate interface for hydration (details fetch).
@@ -17,7 +18,10 @@ export interface ITutorialApiClient {
  * In a real app, this would call your backend: GET /Tutorial/:id (and/or batch).
  */
 class DummyTutorialsApiClient implements ITutorialApiClient {
-  private readonly baseUrl = "http://localhost:3000/tutorials"; 
+  private readonly baseUrl = Platform.OS === 'web' 
+    ? "http://localhost:3000/tutorials" 
+    : "http://192.168.179.10:3000/tutorials"; 
+
   private readonly db: Record<string, ITutorial> = {
     tutorial_1: {
       _id: "tutorial_1",
