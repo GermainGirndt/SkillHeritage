@@ -33,7 +33,10 @@ interface TranscriptionResponse {
 export class OpenAIClient {
   private readonly client: OpenAI;
   private readonly vectorStoreId: string;
-
+  private readonly systemPromptTitle = 'Du bist ein Schreiber, der Reparaturaleitungen für KFZ-Mechaniker zusammenfast. Erstelle einen kurzen, eingängigen Titel aus dem Input-Text. Gib nur den Titel zurück.';
+  private readonly systemPromptDescription = 'Du bist ein Schreiber, der Reparaturaleitungen für KFZ-Mechaniker zusammenfast. Erstelle einen kurze Beschreibung aus dem Input-Text. Die Beschreibung soll ein Satz lang sein. Gib nur die Beschreibung zurück, erfinde nichts dazu und halte dich kurz.';
+  private readonly systemPromptInstruction = 
+  'Du bist ein Schreiber, der Reparaturaleitungen für KFZ-Mechaniker zusammenfast. Erstelle einen kurze, strukturierte Schritt-für-Schritt Anleitung aus dem Input-Text.  Benutze folgende Abschnitte: Thema, TLDR, Benötigte Werkzeuge, Schritt-für-Schritt Anleitung, Tipps und Tricks. Beispiel-Input:Zum Festziehen loser Schrauben an einem Fahrzeug braucht man einen Schrauber und einen Steckschlüssel. Man setzt die Werkzeuge an und dreht die Schrauben, bis alles wieder fest sitzt. Beispiel-Output: Hauptthema: Schrauben festziehen\n\nTLDR: Schrauben mit Schrauber und Steckschlüssel sichern.\n\nWerkzeuge: Schrauber, Steckschlüssel\n\nSchritte:\n1. Werkzeuge bereitlegen\n2. Lockere Schrauben finden\n3. Schrauben anziehen\n\nTipps:\n- Passende Werkzeuggröße verwenden\n- Schrauben korrekt prüfen. Gib nur die Anleitung zurück, erfinde nichts dazu und halte dich kurz. ';
   constructor(private readonly configService: ConfigService) {
     const apiKey = this.configService.get<string>('OPENAI_API_KEY');
 
@@ -91,14 +94,16 @@ export class OpenAIClient {
         model: 'gpt-5',
         input: [
           {
+            role: "developer",
+            content: this.systemPromptTitle
+          },
+          {
             role: 'user',
             content: [
               {
                 type: 'input_text',
                 text:
-                  'This is the text: ' +
-                  transcription +
-                  ' Give it a short, catchy title. Return only the title.',
+                  transcription,
               },
             ],
           },
@@ -120,14 +125,16 @@ export class OpenAIClient {
         model: 'gpt-5',
         input: [
           {
+            role: "developer",
+            content: this.systemPromptDescription
+          },
+          {
             role: 'user',
             content: [
               {
                 type: 'input_text',
                 text:
-                  'This is the text: ' +
-                  transcription +
-                  ' Give it a short one sentence description. Return only the description.',
+                  transcription
               },
             ],
           },
@@ -149,14 +156,16 @@ export class OpenAIClient {
         model: 'gpt-5',
         input: [
           {
+            role: "developer",
+            content: this.systemPromptInstruction
+          },
+          {
             role: 'user',
             content: [
               {
                 type: 'input_text',
                 text:
-                  'This is the text: ' +
-                  transcription +
-                  ' Give back structured, short step by step instructions. Return only the instructions.',
+                  transcription
               },
             ],
           },
