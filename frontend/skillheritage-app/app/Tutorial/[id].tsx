@@ -1,18 +1,22 @@
 // This screen displays the detailed view of a tutorial, including video playback, a timestamped timeline, and AI-generated instructions.
 import { View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator, Platform } from 'react-native';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { theme } from '@/src/styles/theme';
 import ITutorial from '@/models/ITutorial';
-import VideoSection from '@/src/components/VideoSection';
+import VideoSection, { VideoSectionHandle } from '@/src/components/VideoSection';
 
 import ProgressBar from '@/src/components/ProgressBar';
 import StepItem from '@/src/components/StepItem';
 
+
 export default function TutorialDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
-  
+
+
+  const videoRef = useRef<VideoSectionHandle>(null);
+
   const [tutorial, setTutorial] = useState<ITutorial | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'timeline' | 'manual'>('timeline');
@@ -27,15 +31,15 @@ export default function TutorialDetailScreen() {
         // const data = await TutorialsRepository.getById(id as string);
         console.log(`Fetching tutorial data from: ${API_BASE}/tutorials/${id}`);
         const response = await fetch(`${API_BASE}/tutorials/${id}`);
-        
+
         if (!response.ok) throw new Error("Tutorial not found on server");
-        
+
         const data = await response.json();
         setTutorial(data);
 
         // If processing is not complete, check again in 5 seconds
         if (data.processingStatus !== 'completed') {
-            timer = setTimeout(loadTutorial, 5000);
+          timer = setTimeout(loadTutorial, 5000);
         }
       } catch (e) {
         console.error("Failed to load tutorial", e);
@@ -73,19 +77,20 @@ export default function TutorialDetailScreen() {
       </View>
 
       {/* Video section with dynamic stream URL */}
-      <VideoSection videoUri={`${API_BASE}/tutorials/${id}/video/stream`} />
+      <VideoSection ref={videoRef}
+       videoUri={`${API_BASE}/tutorials/${id}/video/stream`} />
 
       {/* Tabs to switch between Video Timeline and Text Guide */}
       <View style={styles.tabBar}>
-        <Pressable 
-            style={[styles.tab, activeTab === 'timeline' && styles.activeTab]} 
-            onPress={() => setActiveTab('timeline')}
+        <Pressable
+          style={[styles.tab, activeTab === 'timeline' && styles.activeTab]}
+          onPress={() => setActiveTab('timeline')}
         >
           <Text style={[styles.tabText, activeTab === 'timeline' && styles.activeTabText]}>Video Timeline</Text>
         </Pressable>
-        <Pressable 
-            style={[styles.tab, activeTab === 'manual' && styles.activeTab]} 
-            onPress={() => setActiveTab('manual')}
+        <Pressable
+          style={[styles.tab, activeTab === 'manual' && styles.activeTab]}
+          onPress={() => setActiveTab('manual')}
         >
           <Text style={[styles.tabText, activeTab === 'manual' && styles.activeTabText]}>Tutorial Guide 📄</Text>
         </Pressable>
@@ -93,44 +98,44 @@ export default function TutorialDetailScreen() {
 
       <ScrollView style={styles.content}>
         {tutorial.processingStatus !== 'completed' ? (
-           <View style={styles.statusBox}>
-               <ActivityIndicator color={theme.colors.accentGold} />
-               <Text style={styles.statusText}>✨ AI is generating your tutorial steps...</Text>
-               <Text style={styles.subStatusText}>This will take about a minute.</Text>
-           </View>
+          <View style={styles.statusBox}>
+            <ActivityIndicator color={theme.colors.accentGold} />
+            <Text style={styles.statusText}>✨ AI is generating your tutorial steps...</Text>
+            <Text style={styles.subStatusText}>This will take about a minute.</Text>
+          </View>
         ) : activeTab === 'timeline' ? (
           <View>
             <View style={styles.progressSection}>
-                <ProgressBar 
-                    progress={tutorial.timelinedAudioTranscript?.length > 0 
-                        ? ((activeStepIndex + 1) / tutorial.timelinedAudioTranscript.length) * 100 
-                        : 0}
-                    title={tutorial.timelinedAudioTranscript ? tutorial.timelinedAudioTranscript[activeStepIndex]?.text : "Introduction"}
-                />
+              <ProgressBar
+                progress={tutorial.timelinedAudioTranscript?.length > 0
+                  ? ((activeStepIndex + 1) / tutorial.timelinedAudioTranscript.length) * 100
+                  : 0}
+                title={tutorial.timelinedAudioTranscript ? tutorial.timelinedAudioTranscript[activeStepIndex]?.text : "Introduction"}
+              />
             </View>
 
             <View style={styles.stepsList}>
-                {tutorial.timelinedAudioTranscript?.map((item, index) => (
-                    <StepItem 
-                        key={index}
-                        time={`${Math.floor(item.timestamp / 60)}:${Math.floor(item.timestamp % 60).toString().padStart(2, '0')}`}
-                        title={`Step ${item.order}`}
-                        description={item.text}
-                        active={index === activeStepIndex}
-                        onPress={() => setActiveStepIndex(index)}
-                    />
-                ))}
+              {tutorial.timelinedAudioTranscript?.map((item, index) => (
+                <StepItem
+                  key={index}
+                  time={`${Math.floor(item.timestamp / 60)}:${Math.floor(item.timestamp % 60).toString().padStart(2, '0')}`}
+                  title={`Step ${item.order}`}
+                  description={item.text}
+                  active={index === activeStepIndex}
+                  onPress={() => { setActiveStepIndex(index); videoRef.current?.seekTo(item.timestamp);}}
+                />
+              ))}
             </View>
           </View>
         ) : (
-                    /* AI-generated text instruction section */
+          /* AI-generated text instruction section */
           <View style={styles.manualContainer}>
             <View style={styles.aiBadge}>
-                <Text style={styles.aiBadgeText}>GENERATED BY AI FROM VIDEO</Text>
+              <Text style={styles.aiBadgeText}>GENERATED BY AI FROM VIDEO</Text>
             </View>
             <View style={styles.manualCard}>
-                <Text style={styles.manualTitle}>Full Tutorial Instructions</Text>
-                <Text style={styles.manualContent}>{tutorial.structuredInstructions}</Text>
+              <Text style={styles.manualTitle}>Full Tutorial Instructions</Text>
+              <Text style={styles.manualContent}>{tutorial.structuredInstructions}</Text>
             </View>
           </View>
         )}

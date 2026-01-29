@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
+import { TranscriptionSegment } from 'openai/resources/audio/transcriptions';
 
 interface ISearchVectorStoreParams {
   intent: string;
@@ -21,6 +22,11 @@ interface IStoreFileInVectorStoreResponse {
   fileId: string;
   filename: string;
   createdAt: string;
+}
+
+interface TranscriptionResponse {
+  text: string;
+  segments: TranscriptionSegment[];
 }
 
 @Injectable()
@@ -49,19 +55,120 @@ export class OpenAIClient {
   }
 
   // for audio transcibing, for voice search
-  async transcribe(buffer: Buffer): Promise<string> {
+  async transcribe(file): Promise<string> {
     try {
-      const file = await OpenAI.toFile(buffer, 'search_audio.m4a');
-
       const response = await this.client.audio.transcriptions.create({
         model: 'whisper-1',
-        file: file,
+        file,
       });
 
       return response.text;
     } catch (error) {
       console.error('OpenAI Transcription error:', error);
       return '';
+    }
+  }
+
+  async getTimestamps(file): Promise<TranscriptionResponse> {
+    try {
+      const response = await this.client.audio.transcriptions.create({
+        model: 'whisper-1',
+        file: file,
+        response_format: 'verbose_json',
+        timestamp_granularities: ['segment'],
+      });
+
+      return { text: response.text, segments: response.segments };
+    } catch (error) {
+      console.error('OpenAI Transcription error:', error);
+      return null;
+    }
+  }
+
+  async getTitle(transcription): Promise<string> {
+    try {
+      const response = await this.client.responses.create({
+        model: 'gpt-5',
+        input: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'input_text',
+                text:
+                  'This is the text: ' +
+                  transcription +
+                  ' Give it a short, catchy title. Return only the title.',
+              },
+            ],
+          },
+        ],
+      });
+
+      const title = response.output_text;
+
+      return title;
+    } catch (error) {
+      console.error('OpenAI error:', error);
+      return null;
+    }
+  }
+
+  async getShortDescription(transcription): Promise<string> {
+    try {
+      const response = await this.client.responses.create({
+        model: 'gpt-5',
+        input: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'input_text',
+                text:
+                  'This is the text: ' +
+                  transcription +
+                  ' Give it a short one sentence description. Return only the description.',
+              },
+            ],
+          },
+        ],
+      });
+
+      const description = response.output_text;
+
+      return description;
+    } catch (error) {
+      console.error('OpenAI error:', error);
+      return null;
+    }
+  }
+
+  async getInstructions(transcription): Promise<string> {
+    try {
+      const response = await this.client.responses.create({
+        model: 'gpt-5',
+        input: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'input_text',
+                text:
+                  'This is the text: ' +
+                  transcription +
+                  ' Give back structured, short step by step instructions. Return only the instructions.',
+              },
+            ],
+          },
+        ],
+      });
+
+      const instructions = response.output_text;
+
+      return instructions;
+    } catch (error) {
+      console.error('OpenAI error:', error);
+      return null;
     }
   }
 

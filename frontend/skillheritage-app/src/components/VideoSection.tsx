@@ -1,15 +1,30 @@
-// This component embeds and manages the video playback interface for a specific tutorial recording.
 import { View, Text, StyleSheet } from 'react-native';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { theme } from '../styles/theme';
+import { forwardRef, useImperativeHandle } from 'react';
 
 type Props = { videoUri: string };
 
-export default function VideoSection({ videoUri }: Props) {
+export interface VideoSectionHandle {
+  seekTo: (seconds: number) => void;
+}
+
+const VideoSection = forwardRef<VideoSectionHandle, Props>(({ videoUri }, ref) => {
   const player = useVideoPlayer(videoUri, (player) => {
-    player.loop = false;
+    player.loop = false
     player.play();
   });
+
+  // Expose seekTo to parent
+  useImperativeHandle(ref, () => ({
+    seekTo: (seconds: number) => {
+      if (player) {
+        player.replay();
+        player.seekBy(seconds);
+        
+      }
+    },
+  }));
 
   return (
     <View style={styles.container}>
@@ -22,7 +37,9 @@ export default function VideoSection({ videoUri }: Props) {
       <Text style={styles.label}>Recording Player</Text>
     </View>
   );
-}
+});
+
+export default VideoSection;
 
 const styles = StyleSheet.create({
   container: {
