@@ -11,18 +11,19 @@ import {
 import { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import { theme } from "../src/styles/theme";
-import { TutorialsRepository } from "@/api/tutorial.api.client";
+import { TutorialsApiClient } from "@/api/tutorial.api.client";
 
 import {
   ITutorialSemanticSearchHit,
-  DummyTutorialsSemanticSearchAPIClient,
-  ITutorialsSemanticSearchAPIClient,
+  TutorialsSemanticSearchAPIClient,
 } from "@/api/semantic-search.api.client";
 
 export default function HomeScreen() {
   const router = useRouter();
   const [search, setSearch] = useState("");
-  const [tutorialSearchHits, setTutorialSearchHits] = useState<ITutorialSemanticSearchHit[]>([]);
+  const [tutorialSearchHits, setTutorialSearchHits] = useState<
+    ITutorialSemanticSearchHit[]
+  >([]);
   const [loading, setLoading] = useState(false);
 
   const fetchTutorials = async (query: string = "") => {
@@ -30,18 +31,19 @@ export default function HomeScreen() {
 
     try {
       if (query.trim() === "") {
-        const allData = await TutorialsRepository.getAll();
-        
+        console.log("No search query provided. Fetching all tutorials.");
+        const allData = await TutorialsApiClient.list();
+
         const mappedResults = allData.map((t: any) => ({
           tutorial: t,
           score: 1,
-          fileId: t._id, 
-          filename: t.videoFileName
+          fileId: t._id,
+          filename: t.videoFileName,
         }));
         setTutorialSearchHits(mappedResults);
       } else {
-        const apiClient: ITutorialsSemanticSearchAPIClient = new DummyTutorialsSemanticSearchAPIClient();
-        const results = await apiClient.search(query, 5);
+        console.log(`Query provided: "${query}". Performing semantic search.`);
+        const results = await TutorialsSemanticSearchAPIClient.search(query, 5);
         setTutorialSearchHits(results);
       }
     } catch (error) {

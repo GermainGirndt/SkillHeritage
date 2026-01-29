@@ -11,17 +11,31 @@ interface EnvironmentVariables {
   BACKEND_API_BASE_URL_ANDROID_EMULATOR: string;
   IS_ANDROID_EMULATOR: boolean;
   IS_ANDROID_PHONE: boolean;
+  USE_DUMMY_API_CLIENT: boolean;
 }
 
 if (!process.env.EXPO_PUBLIC_BACKEND_BASE_URL_ANDROID_PHONE) {
   throw new Error(
-    "Missing env variable: EXPO_PUBLIC_BACKEND_BASE_URL_ANDROID_PHONE"
+    "Missing env variable: EXPO_PUBLIC_BACKEND_BASE_URL_ANDROID_PHONE",
   );
 }
 
 if (!process.env.EXPO_PUBLIC_BACKEND_BASE_URL_ANDROID_EMULATOR) {
   throw new Error(
-    "Missing env variable: EXPO_PUBLIC_BACKEND_BASE_URL_ANDROID_EMULATOR"
+    "Missing env variable: EXPO_PUBLIC_BACKEND_BASE_URL_ANDROID_EMULATOR",
+  );
+}
+
+if (!process.env.EXPO_PUBLIC_USE_DUMMY_API_CLIENT) {
+  throw new Error("Missing env variable: EXPO_PUBLIC_USE_DUMMY_API_CLIENT");
+}
+
+if (
+  process.env.EXPO_PUBLIC_USE_DUMMY_API_CLIENT !== "true" &&
+  process.env.EXPO_PUBLIC_USE_DUMMY_API_CLIENT !== "false"
+) {
+  throw new Error(
+    "Invalid value for EXPO_PUBLIC_USE_DUMMY_API_CLIENT. Must be 'true' or 'false'.",
   );
 }
 
@@ -41,12 +55,16 @@ const CURRENT_BACKEND_API_BASE_URL: string = isEmulator
   ? BACKEND_API_BASE_URL_ANDROID_EMULATOR
   : BACKEND_API_BASE_URL_ANDROID_PHONE;
 
+const USE_DUMMY_API_CLIENT: boolean =
+  process.env.EXPO_PUBLIC_USE_DUMMY_API_CLIENT === "true";
+
 const env: EnvironmentVariables = {
   BACKEND_API_BASE_URL_ANDROID_PHONE,
   BACKEND_API_BASE_URL_ANDROID_EMULATOR,
   CURRENT_BACKEND_API_BASE_URL,
   IS_ANDROID_EMULATOR,
   IS_ANDROID_PHONE,
+  USE_DUMMY_API_CLIENT,
 };
 
 export default env;
