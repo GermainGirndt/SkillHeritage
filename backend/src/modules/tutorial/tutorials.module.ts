@@ -9,6 +9,7 @@ import { TutorialsVideoService } from './services/tutorials-video.service';
 import { SemanticSearchService } from '../semantic-search/services/semantic-search.service';
 import { OpenAIClient } from 'src/shared/providers/openai.client';
 import { TranscriptionService } from '../transcription/services/transcription.service';
+import { LLMService } from '../LLM/services/LLM.service';
 
 @Module({
   imports: [
@@ -24,7 +25,8 @@ import { TranscriptionService } from '../transcription/services/transcription.se
     OpenAIClient,
     SemanticSearchService,
     TutorialProcessingJob,
-    TranscriptionService
+    TranscriptionService,
+    LLMService,
   ],
   exports: [TutorialsService],
 })

@@ -5,6 +5,7 @@ import { Tutorial, TutorialDocument } from '../schemas/tutorial.schema';
 import { TutorialStatus } from './tutorial-status';
 import { SemanticSearchService } from 'src/modules/semantic-search/services/semantic-search.service';
 import { TranscriptionService } from 'src/modules/transcription/services/transcription.service';
+import { LLMService } from 'src/modules/LLM/services/LLM.service';
 
 @Injectable()
 export class TutorialProcessingService {
@@ -14,7 +15,8 @@ export class TutorialProcessingService {
     @InjectModel(Tutorial.name)
     private readonly tutorialModel: Model<TutorialDocument>,
     private semanticSearchService: SemanticSearchService,
-    private transcriptionService: TranscriptionService
+    private transcriptionService: TranscriptionService,
+    private LLMservice: LLMService
   ) { }
 
   /**
@@ -162,14 +164,14 @@ export class TutorialProcessingService {
     // tutorial._id.toString(),
     // TutorialStatus.READY_FOR_VECTOR_STORE_STORAGE,
     // );
-
+    const generated = await this.LLMservice.getLLMResponse(tutorial.audioTranscript);
     await this.tutorialModel.updateOne(
       { _id: tutorial._id },
       {
         $set: {
-          title: "New Recording Tutorial",
-          shortDescription: "Automatically generated description for your recent workshop recording.",
-          structuredInstructions: "1. Prepare your workspace.\n2. Follow the recorded video steps.\n3. Complete the maintenance task.",
+          title: generated.title,
+          shortDescription: generated.description,
+          structuredInstructions: generated.instructions,
           processingStatus: TutorialStatus.COMPLETED,
         },
       },

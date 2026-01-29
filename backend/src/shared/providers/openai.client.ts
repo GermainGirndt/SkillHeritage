@@ -54,6 +54,9 @@ export class OpenAIClient {
     this.client = new OpenAI({ apiKey });
   }
 
+
+
+
   // for audio transcibing, for voice search
   async transcribe(file): Promise<string> {
     try {
@@ -81,6 +84,92 @@ export class OpenAIClient {
       return { text: response.text, segments: response.segments }
     } catch (error) {
       console.error('OpenAI Transcription error:', error);
+      return null;
+    }
+  }
+
+  async getTitle(transcription): Promise<string> {
+    try {
+      const response = await this.client.responses.create({
+        model: "gpt-5",
+        input: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "input_text",
+                text: "This is the text: " + transcription + " Give it a short, catchy title. Return only the title.",
+              },
+            ],
+          },
+        ],
+      });
+
+      const title = response.output_text;
+
+
+
+      return title
+    } catch (error) {
+      console.error('OpenAI error:', error);
+      return null;
+    }
+  }
+
+  async getShortDescription(transcription): Promise<string> {
+    try {
+      const response = await this.client.responses.create({
+        model: "gpt-5",
+        input: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "input_text",
+                text: "This is the text: " + transcription + " Give it a short one sentence description. Return only the description.",
+              },
+            ],
+          },
+        ],
+      });
+
+      const description = response.output_text;
+
+
+
+      return description;
+    } catch (error) {
+      console.error('OpenAI error:', error);
+      return null;
+    }
+  }
+
+
+
+  async getInstructions(transcription): Promise<string> {
+    try {
+      const response = await this.client.responses.create({
+        model: "gpt-5",
+        input: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "input_text",
+                text:"This is the text: " + transcription + " Give back structured, short step by step instructions. Return only the instructions.",
+              },
+            ],
+          },
+        ],
+      });
+
+      const instructions = response.output_text;
+
+
+
+      return instructions
+    } catch (error) {
+      console.error('OpenAI error:', error);
       return null;
     }
   }
