@@ -9,7 +9,7 @@ export class TutorialProcessingJob {
 
   constructor(private readonly processingService: TutorialProcessingService) {}
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_10_SECONDS)
   async run() {
     // prevent overlapping runs in the same instance
     if (this.isRunning) return;

@@ -12,6 +12,9 @@ import { v4 as uuidv4 } from 'uuid';
 import OpenAI from 'openai';
 import { OpenAIClient } from '../../../shared/providers/openai.client';
 
+interface IFindAllParams {
+  limit?: number;
+}
 @Injectable()
 export class TutorialsService {
   private readonly bucket: GridFSBucket;
@@ -144,10 +147,14 @@ export class TutorialsService {
   }
   // private readonly openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-    async transcribeAudio(buffer: Buffer): Promise<string> {
+  async transcribeAudio(buffer: Buffer): Promise<string> {
     return this.openAiClient.transcribe(buffer);
   }
-  async findAll(): Promise<Tutorial[]> {
-    return this.tutorialModel.find().sort({ createdAt: -1 }).exec();
+  async findAll({ limit = 0 }: IFindAllParams = {}): Promise<Tutorial[]> {
+    return this.tutorialModel
+      .find()
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .exec();
   }
 }

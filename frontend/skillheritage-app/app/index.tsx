@@ -8,67 +8,66 @@ import {
   ActivityIndicator,
   Platform,
 } from "react-native";
-import { useEffect, useState, useCallback } from "react";
-import { useRouter, useFocusEffect } from "expo-router";
+import { useEffect, useState } from "react";
+import { useRouter } from "expo-router";
 import { theme } from "../src/styles/theme";
-import { TutorialsRepository } from "@/api/tutorial.api.client";
+import { TutorialsApiClient } from "@/api/tutorial.api.client";
 
 import {
   ITutorialSemanticSearchHit,
-  DummyTutorialsSemanticSearchAPIClient,
-  ITutorialsSemanticSearchAPIClient,
+  TutorialsSemanticSearchAPIClient,
 } from "@/api/semantic-search.api.client";
 
 export default function HomeScreen() {
   const router = useRouter();
   const [search, setSearch] = useState("");
-  const [tutorialSearchHits, setTutorialSearchHits] = useState<ITutorialSemanticSearchHit[]>([]);
+  const [tutorialSearchHits, setTutorialSearchHits] = useState<
+    ITutorialSemanticSearchHit[]
+  >([]);
   const [loading, setLoading] = useState(false);
-
-  useFocusEffect(
-    useCallback(() => {
-      fetchTutorials("");
-    }, [])
-  );
 
   const fetchTutorials = async (query: string = "") => {
     setLoading(true);
+
     try {
       if (query.trim() === "") {
-        const allData = await TutorialsRepository.getAll();
+        console.log("No search query provided. Fetching all tutorials.");
+        const allData = await TutorialsApiClient.list();
+
         const mappedResults = allData.map((t: any) => ({
           tutorial: t,
           score: 1,
-          fileId: t._id, 
-          filename: t.videoFileName
+          fileId: t._id,
+          filename: t.videoFileName,
         }));
         setTutorialSearchHits(mappedResults);
       } else {
-        const apiClient: ITutorialsSemanticSearchAPIClient = new DummyTutorialsSemanticSearchAPIClient();
-        const results = await apiClient.search(query, 5);
+        console.log(`Query provided: "${query}". Performing semantic search.`);
+        const results = await TutorialsSemanticSearchAPIClient.search(query, 5);
         setTutorialSearchHits(results);
       }
     } catch (error) {
       console.error("Search error:", error);
-      setTutorialSearchHits([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (search.trim() !== "") {
-      const delayDebounceFn = setTimeout(() => {
-        fetchTutorials(search);
-      }, 500);
-      return () => clearTimeout(delayDebounceFn);
-    }
+    fetchTutorials("");
+  }, []);
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      fetchTutorials(search);
+    }, 500);
+    return () => clearTimeout(delayDebounceFn);
   }, [search]);
 
   return (
     <View style={styles.container}>
       <Text style={styles.logo}>SkillHeritage</Text>
-      
+
       <View style={styles.searchContainer}>
         <TextInput
           placeholder="Search for tutorials..."
@@ -81,16 +80,16 @@ export default function HomeScreen() {
 
       {loading ? (
         <ActivityIndicator
-        color={theme.colors.accentGold}
-        style={{ marginTop: 20 }}
+          color={theme.colors.accentGold}
+          style={{ marginTop: 20 }}
         />
       ) : (
         <FlatList
           data={tutorialSearchHits}
           keyExtractor={(item) => item.tutorial._id}
           ListEmptyComponent={
-          <Text style={styles.empty}>No tutorials found.</Text>
-        }
+            <Text style={styles.empty}>No tutorials found.</Text>
+          }
           renderItem={({ item }) => (
             <Pressable
               style={styles.card}
@@ -99,7 +98,7 @@ export default function HomeScreen() {
               <Text style={styles.cardTitle}>{item.tutorial.title}</Text>
               <Text style={styles.cardSubtitle}>
                 {item.tutorial.shortDescription}
-                </Text>
+              </Text>
             </Pressable>
           )}
         />

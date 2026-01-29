@@ -1,6 +1,6 @@
 import ITutorial from "@/models/ITutorial";
-import { Platform } from 'react-native'; 
-
+import env from "@/config/dotenv";
+import axios from "axios";
 /**
  * Separate interface for hydration (details fetch).
  * This avoids returning large payloads (transcripts/timestamps/etc.) from search.
@@ -8,9 +8,8 @@ import { Platform } from 'react-native';
 export interface ITutorialApiClient {
   getById(id: string): Promise<ITutorial>;
   getByIds(ids: string[]): Promise<ITutorial[]>;
-  list(limit: number): Promise<ITutorial[]>;
-  getAll(): Promise<ITutorial[]>;
-  transcribeAudio(uri: string): Promise<string>; 
+  list(limit?: number): Promise<ITutorial[]>;
+  transcribeAudio(uri: string): Promise<string>;
 }
 
 /**
@@ -18,10 +17,6 @@ export interface ITutorialApiClient {
  * In a real app, this would call your backend: GET /Tutorial/:id (and/or batch).
  */
 class DummyTutorialsApiClient implements ITutorialApiClient {
-  private readonly baseUrl = Platform.OS === 'web' 
-    ? "http://localhost:3000/tutorials" 
-    : "http://192.168.179.10:3000/tutorials"; 
-
   private readonly db: Record<string, ITutorial> = {
     tutorial_1: {
       _id: "tutorial_1",
@@ -104,21 +99,39 @@ class DummyTutorialsApiClient implements ITutorialApiClient {
     return Promise.all(ids.map((id) => this.getById(id)));
   }
 
-  async list(limit: number): Promise<ITutorial[]> {
+  async list(limit?: number): Promise<ITutorial[]> {
     return Object.values(this.db).slice(0, limit);
   }
 
-  async getAll(): Promise<ITutorial[]> {
-      try {
-        const response = await fetch(this.baseUrl);
-        if (!response.ok) throw new Error("Failed to fetch tutorials");
-        return await response.json();
-      } catch (error) {
-        console.error("Error in TutorialsRepository.getAll:", error);
-        return [];
-      }
-    }
-    async transcribeAudio(uri: string): Promise<string> {
+  async transcribeAudio(uri: string): Promise<string> {
+    const transcribedAudio = `This is the dummy transcribed audio for file at URI: ${uri}`;
+    return transcribedAudio;
+  }
+}
+
+class BackendTutorialsApiClient implements ITutorialApiClient {
+  private readonly baseUrl = `${env.CURRENT_BACKEND_API_BASE_URL}/tutorials`;
+
+  async getById(id: string): Promise<ITutorial> {
+    const response = await axios.get(`${this.baseUrl}/${id}`);
+    if (response.status !== 200) throw new Error("Failed to fetch tutorial");
+    return response.data;
+  }
+
+  async getByIds(ids: string[]): Promise<ITutorial[]> {
+    const response = await axios.get(`${this.baseUrl}`, { params: { ids } });
+
+    if (response.status !== 200) throw new Error("Failed to fetch tutorials");
+    return response.data;
+  }
+
+  async list(limit?: number): Promise<ITutorial[]> {
+    const response = await axios.get(`${this.baseUrl}`, { params: { limit } });
+    if (response.status !== 200) throw new Error("Failed to fetch tutorials");
+    return response.data;
+  }
+
+  async transcribeAudio(uri: string): Promise<string> {
     const formData = new FormData();
     formData.append("file", {
       uri,
@@ -126,18 +139,24 @@ class DummyTutorialsApiClient implements ITutorialApiClient {
       name: "search_query.m4a",
     } as any);
 
-    const response = await fetch(`${this.baseUrl}/stt`, {
-      method: "POST",
-      body: formData,
-    });
+    const response = await axios.post(
+      `${this.baseUrl}/speech-to-text`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      },
+    );
 
-    if (!response.ok) throw new Error("Speech-to-text failed");
+    if (response.status !== 200) throw new Error("Speech-to-text failed");
 
-    const data = await response.json();
-    return data.text;
+    return response.data;
   }
-  }
+}
 
-const TutorialsRepository: ITutorialApiClient = new DummyTutorialsApiClient();
+const TutorialsApiClient: ITutorialApiClient = env.USE_DUMMY_API_CLIENT
+  ? new DummyTutorialsApiClient()
+  : new BackendTutorialsApiClient();
 
-export { DummyTutorialsApiClient, TutorialsRepository };
+export { DummyTutorialsApiClient, TutorialsApiClient };

@@ -1,5 +1,6 @@
 import { DummyTutorialsApiClient } from "@/api/tutorial.api.client";
 import Tutorial from "@/models/ITutorial";
+import env from "@/config/dotenv";
 import axios from "axios";
 
 // Refactor to semantic-search.api.client.ts
@@ -55,8 +56,8 @@ class DummyTutorialsSemanticSearchAPIClient implements ITutorialsSemanticSearchA
   }
 }
 
-class TutorialsSemanticSearchAPIClient implements ITutorialsSemanticSearchAPIClient {
-  private readonly baseUrl = "http://localhost:3000";
+class BackendSemanticSearchAPIClient implements ITutorialsSemanticSearchAPIClient {
+  private readonly baseUrl = `${env.CURRENT_BACKEND_API_BASE_URL}/semantic-search/tutorials`;
 
   async search(
     intent: string,
@@ -66,15 +67,12 @@ class TutorialsSemanticSearchAPIClient implements ITutorialsSemanticSearchAPICli
       return [];
     }
 
-    const response = await axios.get(
-      `${this.baseUrl}/semantic-search/tutorials`,
-      {
-        params: {
-          intent,
-          topK,
-        },
+    const response = await axios.get(`${this.baseUrl}`, {
+      params: {
+        intent,
+        topK,
       },
-    );
+    });
 
     /**
      * Expected backend response example:
@@ -96,9 +94,13 @@ class TutorialsSemanticSearchAPIClient implements ITutorialsSemanticSearchAPICli
   }
 }
 
+const TutorialsSemanticSearchAPIClient: ITutorialsSemanticSearchAPIClient =
+  env.USE_DUMMY_API_CLIENT
+    ? new DummyTutorialsSemanticSearchAPIClient()
+    : new BackendSemanticSearchAPIClient();
+
 export {
   ITutorialSemanticSearchHit,
   ITutorialsSemanticSearchAPIClient,
-  DummyTutorialsSemanticSearchAPIClient,
   TutorialsSemanticSearchAPIClient,
 };

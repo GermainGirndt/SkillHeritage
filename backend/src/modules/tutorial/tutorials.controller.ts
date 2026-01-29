@@ -8,6 +8,7 @@ import {
   UploadedFile,
   UseInterceptors,
   Req,
+  Query,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
@@ -26,6 +27,16 @@ export class TutorialsController {
   @Get(':id')
   async getById(@Param('id') id: string) {
     return this.tutorialsService.getById(id);
+  }
+
+  // optional: ids to filter by query param
+  @Get('')
+  async listAll(@Query('ids') ids?: string[], @Query('limit') limit?: number) {
+    if (ids && ids.length > 0) {
+      return this.tutorialsService.getManyByIds(ids);
+    }
+
+    return this.tutorialsService.findAll({ limit: limit ? Number(limit) : 0 });
   }
 
   @Get(':id/video')
@@ -88,7 +99,7 @@ export class TutorialsController {
     console.log(`Received file: ${file?.originalname}, size: ${file?.size}`);
     return this.tutorialsService.createFromVideoUpload(file);
   }
-    @Post('stt')
+  @Post('speech-to-text')
   @UseInterceptors(FileInterceptor('file'))
   async speechToText(@UploadedFile() file: Express.Multer.File) {
     console.log('Received audio for STT');
@@ -96,7 +107,7 @@ export class TutorialsController {
     return { text };
   }
   @Get()
-  async getAll() {
-    return this.tutorialsService.findAll();
+  async getAll(@Query('limit') limit?: number) {
+    return this.tutorialsService.findAll({ limit: limit ? Number(limit) : 0 });
   }
 }
