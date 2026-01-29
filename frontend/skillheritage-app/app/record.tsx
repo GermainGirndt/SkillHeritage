@@ -44,6 +44,8 @@ export default function RecordScreen() {
         video: true,
         audio: true,
       });
+
+      // TODO: Adapt to send .webm files to backend
       mediaRecorder = new MediaRecorder(stream);
       videoChunks = [];
 
@@ -125,6 +127,7 @@ export default function RecordScreen() {
 
     try {
       console.log("Sending to server:", API.uploadVideo);
+      // TODO: Use an axios api client
       const res = await fetch(API.uploadVideo, {
         method: "POST",
         body: formData,
