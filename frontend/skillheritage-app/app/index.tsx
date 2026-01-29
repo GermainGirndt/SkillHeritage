@@ -8,8 +8,8 @@ import {
   ActivityIndicator,
   Platform,
 } from "react-native";
-import { useEffect, useState } from "react";
-import { useRouter } from "expo-router";
+import { useEffect, useState, useCallback } from "react";
+import { useRouter, useFocusEffect } from "expo-router";
 import { theme } from "../src/styles/theme";
 import { TutorialsApiClient } from "@/api/tutorial.api.client";
 
@@ -26,9 +26,14 @@ export default function HomeScreen() {
   >([]);
   const [loading, setLoading] = useState(false);
 
+  useFocusEffect(
+    useCallback(() => {
+      fetchTutorials("");
+    }, [])
+  );
+
   const fetchTutorials = async (query: string = "") => {
     setLoading(true);
-
     try {
       if (query.trim() === "") {
         console.log("No search query provided. Fetching all tutorials.");
@@ -48,26 +53,25 @@ export default function HomeScreen() {
       }
     } catch (error) {
       console.error("Search error:", error);
+      setTutorialSearchHits([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchTutorials("");
-  }, []);
-
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      fetchTutorials(search);
-    }, 500);
-    return () => clearTimeout(delayDebounceFn);
+    if (search.trim() !== "") {
+      const delayDebounceFn = setTimeout(() => {
+        fetchTutorials(search);
+      }, 500);
+      return () => clearTimeout(delayDebounceFn);
+    }
   }, [search]);
 
   return (
     <View style={styles.container}>
       <Text style={styles.logo}>SkillHeritage</Text>
-
+      
       <View style={styles.searchContainer}>
         <TextInput
           placeholder="Search for tutorials..."
@@ -80,16 +84,16 @@ export default function HomeScreen() {
 
       {loading ? (
         <ActivityIndicator
-          color={theme.colors.accentGold}
-          style={{ marginTop: 20 }}
+        color={theme.colors.accentGold}
+        style={{ marginTop: 20 }}
         />
       ) : (
         <FlatList
           data={tutorialSearchHits}
           keyExtractor={(item) => item.tutorial._id}
           ListEmptyComponent={
-            <Text style={styles.empty}>No tutorials found.</Text>
-          }
+          <Text style={styles.empty}>No tutorials found.</Text>
+        }
           renderItem={({ item }) => (
             <Pressable
               style={styles.card}
@@ -98,7 +102,7 @@ export default function HomeScreen() {
               <Text style={styles.cardTitle}>{item.tutorial.title}</Text>
               <Text style={styles.cardSubtitle}>
                 {item.tutorial.shortDescription}
-              </Text>
+                </Text>
             </Pressable>
           )}
         />
