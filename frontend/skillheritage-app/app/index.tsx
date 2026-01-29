@@ -6,80 +6,44 @@ import {
   Pressable,
   FlatList,
   ActivityIndicator,
-  Alert,
   Platform,
 } from "react-native";
 import { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import { theme } from "../src/styles/theme";
-// import { API } from "../src/services/api";
-
-// Should we really use @react-native-voice? It just works in dev builds, not in Expo Go.
-// It think it's better to use the native microphone access from expo-audio or expo-camera
-// and then convert it into text via an API call to the backend (or locally using Whisper).
-import { useAudioRecorder, AudioModule, RecordingPresets } from "expo-audio";
+import { TutorialsRepository } from "@/api/tutorial.api.client";
 
 import {
   ITutorialSemanticSearchHit,
   DummyTutorialsSemanticSearchAPIClient,
   ITutorialsSemanticSearchAPIClient,
-  TutorialsSemanticSearchAPIClient,
 } from "@/api/semantic-search.api.client";
-import AudioRecorder from "./AudioRecorder";
 
 export default function HomeScreen() {
   const router = useRouter();
   const [search, setSearch] = useState("");
-  const [tutorialSearchHits, setTutorialSearchHits] = useState<
-    ITutorialSemanticSearchHit[]
-  >([]);
+  const [tutorialSearchHits, setTutorialSearchHits] = useState<ITutorialSemanticSearchHit[]>([]);
   const [loading, setLoading] = useState(false);
-  const [isRecordingSearch, setIsRecordingSearch] = useState(false);
-
-  const recorder = useAudioRecorder({
-    ...RecordingPresets.HIGH_QUALITY,
-
-    sampleRate: 44100,
-    numberOfChannels: 1,
-    bitRate: 128000,
-
-    android: {
-      ...RecordingPresets.HIGH_QUALITY.android,
-      extension: ".m4a",
-      outputFormat: "mpeg4",
-      audioEncoder: "aac",
-    },
-
-    ios: {
-      ...RecordingPresets.HIGH_QUALITY.ios,
-      extension: ".m4a",
-      outputFormat: "mpeg4aac",
-      audioQuality: 127, // max quality
-    },
-  });
-
-  // TODO  - Gosia: Replace with API client
-  const API_URL = "http://localhost:3000";
-  // const API_URL = "http://10.212.54.167:3000";
 
   const fetchTutorials = async (query: string = "") => {
     setLoading(true);
 
-    if (query.trim() === "") {
-      setLoading(false);
-      setTutorialSearchHits([]);
-      return;
-    }
-
     try {
-      /* const apiClient: ITutorialsSemanticSearchAPIClient =
-        new DummyTutorialsSemanticSearchAPIClient(); */
-
-      const apiClient: ITutorialsSemanticSearchAPIClient =
-        new TutorialsSemanticSearchAPIClient();
-
-      const results = await apiClient.search(query, 5);
-      setTutorialSearchHits(results);
+      if (query.trim() === "") {
+        const allData = await TutorialsRepository.getAll();
+        
+        const mappedResults = allData.map((t: any) => ({
+          tutorial: t,
+          score: 1,
+          fileId: t._id, 
+          filename: t.videoFileName
+        }));
+        setTutorialSearchHits(mappedResults);
+      } else {
+        const apiClient: ITutorialsSemanticSearchAPIClient = new DummyTutorialsSemanticSearchAPIClient();
+        const results = await apiClient.search(query, 5);
+        setTutorialSearchHits(results);
+      }
     } catch (error) {
       console.error("Search error:", error);
     } finally {
@@ -88,65 +52,15 @@ export default function HomeScreen() {
   };
 
   useEffect(() => {
+    fetchTutorials("");
+  }, []);
+
+  useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       fetchTutorials(search);
     }, 500);
-
     return () => clearTimeout(delayDebounceFn);
   }, [search]);
-
-  const startRecordingSearch = async () => {
-    try {
-      const permission = await AudioModule.requestRecordingPermissionsAsync();
-      if (permission.status === "granted") {
-        setIsRecordingSearch(true);
-        await recorder.prepareToRecordAsync();
-        recorder.record();
-      }
-    } catch (err) {
-      console.error(err);
-      setIsRecordingSearch(false);
-    }
-  };
-
-  const stopRecordingSearch = async () => {
-    if (!recorder.isRecording) {
-      setIsRecordingSearch(false);
-      return;
-    }
-
-    try {
-      setIsRecordingSearch(false);
-      await recorder.stop();
-      const uri = recorder.uri;
-      if (uri) handleTranscription(uri);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleTranscription = async (uri: string) => {
-    setLoading(true);
-    try {
-      const formData = new FormData();
-      formData.append("file", {
-        uri,
-        type: "audio/m4a",
-        name: "search_query.m4a",
-      } as any);
-      const response = await fetch(`${API_URL}/tutorials/stt`, {
-        method: "POST",
-        body: formData,
-      });
-      // const response = await fetch(`${API.uploadVideo}/stt`, { method: "POST", body: formData  });
-      const data = await response.json();
-      if (data.text) setSearch(data.text);
-    } catch (e) {
-      Alert.alert("Error", "Could not process voice search.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <View style={styles.container}>
@@ -160,16 +74,6 @@ export default function HomeScreen() {
           value={search}
           onChangeText={setSearch}
         />
-        <Pressable
-          style={[
-            styles.micButton,
-            isRecordingSearch && { backgroundColor: "#ff4444" },
-          ]}
-          onPressIn={startRecordingSearch}
-          onPressOut={stopRecordingSearch}
-        >
-          <Text style={styles.micIcon}>{isRecordingSearch ? "🔴" : "🎙️"}</Text>
-        </Pressable>
       </View>
 
       {loading ? (
@@ -224,17 +128,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 12,
     color: "#fff",
-    marginRight: 10,
   },
-  micButton: {
-    backgroundColor: theme.colors.primary,
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  micIcon: { fontSize: 20 },
   empty: {
     color: theme.colors.textSecondary,
     textAlign: "center",

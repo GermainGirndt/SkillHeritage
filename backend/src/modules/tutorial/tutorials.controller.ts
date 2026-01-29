@@ -95,4 +95,8 @@ export class TutorialsController {
     const text = await this.tutorialsService.transcribeAudio(file.buffer);
     return { text };
   }
+  @Get()
+  async getAll() {
+    return this.tutorialsService.findAll();
+  }
 }
