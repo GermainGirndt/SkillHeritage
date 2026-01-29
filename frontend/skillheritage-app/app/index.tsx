@@ -18,7 +18,6 @@ import {
   DummyTutorialsSemanticSearchAPIClient,
   ITutorialsSemanticSearchAPIClient,
 } from "@/api/semantic-search.api.client";
-import AudioRecorder from "./AudioRecorder";
 
 export default function HomeScreen() {
   const router = useRouter();
