@@ -172,7 +172,7 @@ export class TutorialProcessingService {
           title: generated.title,
           shortDescription: generated.description,
           structuredInstructions: generated.instructions,
-          processingStatus: TutorialStatus.COMPLETED,
+          processingStatus: TutorialStatus.READY_FOR_VECTOR_STORE_STORAGE,
         },
       },
     );
