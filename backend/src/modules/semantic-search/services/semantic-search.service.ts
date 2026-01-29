@@ -66,7 +66,7 @@ export class SemanticSearchService {
   public async storeFileInVectorStore({
     file,
   }: IStoreFileInVectorStoreRequestParams): Promise<IStoreFileInVectorStoreResponse> {
-    console.log('Storing file in vector store:', file.name);
+    console.log(`Storing file named '${file.name}' into vector store:`);
     console.log('File size (bytes):', file.size);
     console.log(file);
 
