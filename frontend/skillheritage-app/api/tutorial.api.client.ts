@@ -8,6 +8,8 @@ export interface ITutorialApiClient {
   getById(id: string): Promise<ITutorial>;
   getByIds(ids: string[]): Promise<ITutorial[]>;
   list(limit: number): Promise<ITutorial[]>;
+  getAll(): Promise<ITutorial[]>;
+  transcribeAudio(uri: string): Promise<string>; 
 }
 
 /**
@@ -15,6 +17,7 @@ export interface ITutorialApiClient {
  * In a real app, this would call your backend: GET /Tutorial/:id (and/or batch).
  */
 class DummyTutorialsApiClient implements ITutorialApiClient {
+  private readonly baseUrl = "http://localhost:3000/tutorials"; 
   private readonly db: Record<string, ITutorial> = {
     tutorial_1: {
       _id: "tutorial_1",
@@ -100,7 +103,36 @@ class DummyTutorialsApiClient implements ITutorialApiClient {
   async list(limit: number): Promise<ITutorial[]> {
     return Object.values(this.db).slice(0, limit);
   }
-}
+
+  async getAll(): Promise<ITutorial[]> {
+      try {
+        const response = await fetch(this.baseUrl);
+        if (!response.ok) throw new Error("Failed to fetch tutorials");
+        return await response.json();
+      } catch (error) {
+        console.error("Error in TutorialsRepository.getAll:", error);
+        return [];
+      }
+    }
+    async transcribeAudio(uri: string): Promise<string> {
+    const formData = new FormData();
+    formData.append("file", {
+      uri,
+      type: "audio/m4a",
+      name: "search_query.m4a",
+    } as any);
+
+    const response = await fetch(`${this.baseUrl}/stt`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) throw new Error("Speech-to-text failed");
+
+    const data = await response.json();
+    return data.text;
+  }
+  }
 
 const TutorialsRepository: ITutorialApiClient = new DummyTutorialsApiClient();
 

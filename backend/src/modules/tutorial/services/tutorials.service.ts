@@ -147,4 +147,7 @@ export class TutorialsService {
     async transcribeAudio(buffer: Buffer): Promise<string> {
     return this.openAiClient.transcribe(buffer);
   }
+  async findAll(): Promise<Tutorial[]> {
+    return this.tutorialModel.find().sort({ createdAt: -1 }).exec();
+  }
 }
