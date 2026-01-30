@@ -6,7 +6,7 @@ const isEmulator = !Device.isDevice;
 // for loading env variables in expo, the variables must start with EXPO_PUBLIC_
 // see: https://docs.expo.dev/guides/environment-variables/
 interface EnvironmentVariables {
-  CURRENT_BACKEND_API_BASE_URL: string;
+  DEFAULT_BACKEND_API_BASE_URL: string;
   BACKEND_API_BASE_URL_ANDROID_PHONE: string;
   BACKEND_API_BASE_URL_ANDROID_EMULATOR: string;
   IS_ANDROID_EMULATOR: boolean;
@@ -51,7 +51,7 @@ const BACKEND_API_BASE_URL_ANDROID_EMULATOR: string =
 const IS_ANDROID_EMULATOR: boolean = isEmulator;
 const IS_ANDROID_PHONE: boolean = !isEmulator;
 
-const CURRENT_BACKEND_API_BASE_URL: string = isEmulator
+const DEFAULT_BACKEND_API_BASE_URL: string = isEmulator
   ? BACKEND_API_BASE_URL_ANDROID_EMULATOR
   : BACKEND_API_BASE_URL_ANDROID_PHONE;
 
@@ -61,7 +61,7 @@ const USE_DUMMY_API_CLIENT: boolean =
 const env: EnvironmentVariables = {
   BACKEND_API_BASE_URL_ANDROID_PHONE,
   BACKEND_API_BASE_URL_ANDROID_EMULATOR,
-  CURRENT_BACKEND_API_BASE_URL,
+  DEFAULT_BACKEND_API_BASE_URL,
   IS_ANDROID_EMULATOR,
   IS_ANDROID_PHONE,
   USE_DUMMY_API_CLIENT,

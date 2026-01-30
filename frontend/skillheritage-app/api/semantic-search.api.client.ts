@@ -57,7 +57,7 @@ class DummyTutorialsSemanticSearchAPIClient implements ITutorialsSemanticSearchA
 }
 
 class BackendSemanticSearchAPIClient implements ITutorialsSemanticSearchAPIClient {
-  private readonly baseUrl = `${env.CURRENT_BACKEND_API_BASE_URL}/semantic-search/tutorials`;
+  private readonly baseUrl = `${env.DEFAULT_BACKEND_API_BASE_URL}/semantic-search/tutorials`;
 
   async search(
     intent: string,

@@ -110,7 +110,7 @@ class DummyTutorialsApiClient implements ITutorialApiClient {
 }
 
 class BackendTutorialsApiClient implements ITutorialApiClient {
-  private readonly baseUrl = `${env.CURRENT_BACKEND_API_BASE_URL}/tutorials`;
+  private readonly baseUrl = `${env.DEFAULT_BACKEND_API_BASE_URL}/tutorials`;
 
   async getById(id: string): Promise<ITutorial> {
     const response = await axios.get(`${this.baseUrl}/${id}`);

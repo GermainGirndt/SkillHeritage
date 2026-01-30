@@ -91,7 +91,7 @@ export default function TutorialDetailScreen() {
       {/* Video section with dynamic stream URL */}
       <VideoSection
         ref={videoRef}
-        videoUri={`${env.CURRENT_BACKEND_API_BASE_URL}/tutorials/${id}/video/stream`}
+        videoUri={`${env.DEFAULT_BACKEND_API_BASE_URL}/tutorials/${id}/video/stream`}
       />
 
       {/* Tabs to switch between Video Timeline and Text Guide */}
