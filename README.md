@@ -85,3 +85,7 @@ uberspace web backend list
 ```
 uberspace tools version use mongodb 4.2
 ```
+supervisorctl reread
+supervisorctl update
+supervisorctl status
+

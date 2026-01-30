@@ -28,6 +28,13 @@ export default function HomeScreen() {
 
   console.log("Rendering HomeScreen");
   // executing just once on mount
+  useFocusEffect(
+      useCallback(() => {
+        if (search === "") {
+          fetchTutorials("");
+        }
+      }, [search])
+    );
 
   useEffect(() => {
     console.log("Feching tutorials effect");
