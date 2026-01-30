@@ -145,6 +145,7 @@ export class TutorialsService {
       Readable.from(buffer).pipe(uploadStream);
     });
   }
+  // private readonly openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
   async transcribeAudio(buffer: Buffer): Promise<string> {
     return this.openAiClient.transcribe(buffer);
