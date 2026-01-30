@@ -129,7 +129,10 @@ export class TutorialsVideoService {
     const file = files[0] as any;
     const fileSize: number = file.length;
     const contentType: string =
-      file.metadata?.contentType || file.contentType || 'video/mp4'; // fallback
+      file.metadata?.contentType ||
+      file.contentType ||
+      tutorial.videoMimeType ||
+      'video/mp4'; // fallback
 
     const rangeHeader = req.headers.range;
 

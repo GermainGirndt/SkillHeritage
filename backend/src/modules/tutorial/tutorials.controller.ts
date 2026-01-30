@@ -96,7 +96,9 @@ export class TutorialsController {
     @UploadedFile() file: Express.Multer.File,
   ): Promise<CreateTutorialResponseDto> {
     console.log(`Processing incoming request at ${new Date().toISOString()}`);
-    console.log(`Received file: ${file?.originalname}, size: ${file?.size}`);
+    console.log(
+      `Received file: ${file?.originalname}, size: ${file?.size}, mimetype: ${file?.mimetype}`,
+    );
     return this.tutorialsService.createFromVideoUpload(file);
   }
   @Post('speech-to-text')

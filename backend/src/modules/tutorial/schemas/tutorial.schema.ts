@@ -106,6 +106,11 @@ export class Tutorial {
   createdAt: Date;
 
   updatedAt: Date;
+
+  // when processing
+  videoOriginalFileName?: string;
+
+  videoMimeType?: string;
 }
 
 export const TutorialSchema = SchemaFactory.createForClass(Tutorial);
