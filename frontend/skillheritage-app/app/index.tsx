@@ -26,13 +26,20 @@ export default function HomeScreen() {
   >([]);
   const [loading, setLoading] = useState(false);
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchTutorials("");
-    }, [])
-  );
+  console.log("Rendering HomeScreen");
+  // executing just once on mount
+
+  useEffect(() => {
+    console.log("Feching tutorials effect");
+
+    const delayDebounceFn = setTimeout(() => {
+      fetchTutorials(search);
+    }, 500);
+    return () => clearTimeout(delayDebounceFn);
+  }, [search]);
 
   const fetchTutorials = async (query: string = "") => {
+    console.log("FetchTutorials called");
     setLoading(true);
     try {
       if (query.trim() === "") {
@@ -59,19 +66,10 @@ export default function HomeScreen() {
     }
   };
 
-  useEffect(() => {
-    if (search.trim() !== "") {
-      const delayDebounceFn = setTimeout(() => {
-        fetchTutorials(search);
-      }, 500);
-      return () => clearTimeout(delayDebounceFn);
-    }
-  }, [search]);
-
   return (
     <View style={styles.container}>
       <Text style={styles.logo}>SkillHeritage</Text>
-      
+
       <View style={styles.searchContainer}>
         <TextInput
           placeholder="Search for tutorials..."
@@ -84,16 +82,16 @@ export default function HomeScreen() {
 
       {loading ? (
         <ActivityIndicator
-        color={theme.colors.accentGold}
-        style={{ marginTop: 20 }}
+          color={theme.colors.accentGold}
+          style={{ marginTop: 20 }}
         />
       ) : (
         <FlatList
           data={tutorialSearchHits}
           keyExtractor={(item) => item.tutorial._id}
           ListEmptyComponent={
-          <Text style={styles.empty}>No tutorials found.</Text>
-        }
+            <Text style={styles.empty}>No tutorials found.</Text>
+          }
           renderItem={({ item }) => (
             <Pressable
               style={styles.card}
@@ -102,7 +100,7 @@ export default function HomeScreen() {
               <Text style={styles.cardTitle}>{item.tutorial.title}</Text>
               <Text style={styles.cardSubtitle}>
                 {item.tutorial.shortDescription}
-                </Text>
+              </Text>
             </Pressable>
           )}
         />
