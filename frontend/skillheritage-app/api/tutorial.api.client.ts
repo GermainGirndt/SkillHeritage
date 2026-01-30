@@ -1,6 +1,14 @@
 import ITutorial from "@/models/ITutorial";
 import env from "@/config/dotenv";
 import axios from "axios";
+import { API } from "@/src/services/api";
+import { Platform } from "react-native";
+
+interface IUploadVideoParams {
+  uri: string;
+  webBlob?: Blob;
+}
+
 /**
  * Separate interface for hydration (details fetch).
  * This avoids returning large payloads (transcripts/timestamps/etc.) from search.
@@ -10,6 +18,7 @@ export interface ITutorialApiClient {
   getByIds(ids: string[]): Promise<ITutorial[]>;
   list(limit?: number): Promise<ITutorial[]>;
   transcribeAudio(uri: string): Promise<string>;
+  uploadVideo(params: IUploadVideoParams): Promise<string>;
 }
 
 /**
@@ -22,7 +31,7 @@ class DummyTutorialsApiClient implements ITutorialApiClient {
       _id: "tutorial_1",
       // uploaded video data
       videoGridFsFileId: "gridfs_file_id-121426262",
-      videoFileName: "change_car_tire.mp4",
+      videoFileName: "change_car_tire.webm",
       processingStatus: "completed",
       // audio transcript (speech2text)
       audioTranscript: "To change a car tire, first loosen the lug nuts...",
@@ -56,7 +65,7 @@ class DummyTutorialsApiClient implements ITutorialApiClient {
       _id: "tutorial_2",
       // uploaded video data
       videoGridFsFileId: "gridfs_file_id-121426263",
-      videoFileName: "repair_car_motor.mp4",
+      videoFileName: "repair_car_motor.webm",
       // audio transcript (speech2text)
       processingStatus: "completed",
       audioTranscript:
@@ -107,12 +116,17 @@ class DummyTutorialsApiClient implements ITutorialApiClient {
     const transcribedAudio = `This is the dummy transcribed audio for file at URI: ${uri}`;
     return transcribedAudio;
   }
+
+  async uploadVideo(params: IUploadVideoParams): Promise<string> {
+    return this.db["tutorial_1"]._id;
+  }
 }
 
 class BackendTutorialsApiClient implements ITutorialApiClient {
   private readonly baseUrl = `${env.DEFAULT_BACKEND_API_BASE_URL}/tutorials`;
 
   async getById(id: string): Promise<ITutorial> {
+    console.log(`BackendTutorialsApiClient.getById called. id=${id}`);
     const response = await axios.get(`${this.baseUrl}/${id}`);
     if (response.status !== 200) throw new Error("Failed to fetch tutorial");
     return response.data;
@@ -153,10 +167,90 @@ class BackendTutorialsApiClient implements ITutorialApiClient {
 
     return response.data;
   }
+
+  async uploadVideo({ uri, webBlob }: IUploadVideoParams): Promise<string> {
+    console.log(`BackendTutorialsApiClient.uploadVideo called. uri=${uri}`);
+
+    console.log("Preparing video upload...");
+    // Helper: infer type + filename from uri for native uploads
+    const guessVideoMeta = (u: string): { type: string; name: string } => {
+      const lower = (u || "").toLowerCase();
+
+      if (lower.endsWith(".mp4"))
+        return { type: "video/mp4", name: "video.mp4" };
+      if (lower.endsWith(".mov"))
+        return { type: "video/quicktime", name: "video.mov" };
+      if (lower.endsWith(".webm"))
+        return { type: "video/webm", name: "video.webm" };
+
+      // Fallback: unknown container
+      return { type: "application/octet-stream", name: "video.bin" };
+    };
+
+    const formData = new FormData();
+
+    // Decide what to send
+    if (webBlob) {
+      // Web: send the blob directly
+      const filename =
+        webBlob.type === "video/webm"
+          ? "video.webm"
+          : webBlob.type === "video/mp4"
+            ? "video.mp4"
+            : "video.bin";
+
+      console.log("Web upload -> blob:", {
+        type: webBlob.type,
+        size: webBlob.size,
+        filename,
+      });
+      formData.append("file", webBlob, filename);
+    } else {
+      // Native: send file uri with correct mime/name inferred from extension
+      if (!uri) throw new Error("uploadVideo: Missing uri for native upload");
+
+      const { type, name } = guessVideoMeta(uri);
+      console.log("Native upload -> file meta:", { uri, type, name });
+
+      formData.append("file", {
+        uri,
+        type,
+        name,
+      } as any);
+    }
+
+    // RN nuance:
+    // - Web: don't set Content-Type manually (browser adds boundary)
+    // - Native: often safer to set multipart/form-data
+    const config =
+      Platform.OS === "web"
+        ? undefined
+        : { headers: { "Content-Type": "multipart/form-data" } };
+
+    console.log("Posting multipart to:", API.uploadVideo);
+    const response = await axios.post(API.uploadVideo, formData, config);
+
+    const tutorialIdPrivate = response?.data?.tutorialIdPrivate;
+
+    if (!tutorialIdPrivate) {
+      throw new Error("Server did not return tutorialIdPrivate");
+    }
+    if (typeof tutorialIdPrivate !== "string") {
+      throw new Error(
+        `Invalid tutorialIdPrivate format from server: ${tutorialIdPrivate} typeof ${typeof tutorialIdPrivate}`,
+      );
+    }
+
+    return tutorialIdPrivate;
+  }
 }
 
-const TutorialsApiClient: ITutorialApiClient = env.USE_DUMMY_API_CLIENT
+const DefaultTutorialsApiClient: ITutorialApiClient = env.USE_DUMMY_API_CLIENT
   ? new DummyTutorialsApiClient()
   : new BackendTutorialsApiClient();
 
-export { DummyTutorialsApiClient, TutorialsApiClient };
+console.log(
+  `Using ${DefaultTutorialsApiClient.constructor.name} as TutorialsApiClient`,
+);
+
+export { DummyTutorialsApiClient, DefaultTutorialsApiClient };

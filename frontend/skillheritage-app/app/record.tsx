@@ -17,6 +17,7 @@ import {
 } from "expo-camera";
 import { theme } from "../src/styles/theme";
 import { API } from "../src/services/api";
+import { DefaultTutorialsApiClient } from "@/api/tutorial.api.client";
 
 let mediaRecorder: any = null;
 let videoChunks: any[] = [];
@@ -45,7 +46,6 @@ export default function RecordScreen() {
         audio: true,
       });
 
-      // TODO: Adapt to send .webm files to backend
       mediaRecorder = new MediaRecorder(stream);
       videoChunks = [];
 
@@ -54,10 +54,27 @@ export default function RecordScreen() {
       };
 
       mediaRecorder.onstop = async () => {
-        const videoBlob = new Blob(videoChunks, { type: "video/mp4" });
-        const videoUrl = URL.createObjectURL(videoBlob);
-        await uploadVideo(videoUrl, videoBlob);
-        stream.getTracks().forEach((track) => track.stop());
+        try {
+          const videoBlob = new Blob(videoChunks, {
+            type: "video/webm",
+          });
+          const videoUrl = URL.createObjectURL(videoBlob);
+
+          await uploadVideo(videoUrl, videoBlob);
+
+          console.log("Video uploaded successfully");
+        } catch (err) {
+          console.error("Upload failed:", err);
+        }
+
+        // 5. Stop all media tracks (important!)
+        mediaRecorder.stream
+          .getTracks()
+          .forEach((track: MediaStreamTrack) => track.stop());
+
+        // 6. Reset state
+        videoChunks = [];
+        setRecording(false);
       };
 
       mediaRecorder.start();
@@ -111,38 +128,26 @@ export default function RecordScreen() {
     }
   };
 
-  async function uploadVideo(uri: string, webBlob?: Blob) {
+  async function uploadVideo(uri: string, webBlob?: Blob): Promise<string> {
     setIsUploading(true);
-    const formData = new FormData();
 
-    if (webBlob) {
-      formData.append("file", webBlob, "video.mp4");
-    } else {
-      formData.append("file", {
-        uri,
-        type: "video/mp4",
-        name: "video.mp4",
-      } as any);
-    }
-
+    let tutorialIdPrivate = "";
     try {
-      console.log("Sending to server:", API.uploadVideo);
-      // TODO: Use an axios api client
-      const res = await fetch(API.uploadVideo, {
-        method: "POST",
-        body: formData,
+      tutorialIdPrivate = await DefaultTutorialsApiClient.uploadVideo({
+        uri,
+        webBlob,
       });
-      const data = await res.json();
-      console.log("Server response:", data);
 
-      if (res.ok && data.tutorialIdPrivate) {
-        router.replace({
-          pathname: "/Tutorial/[id]",
-          params: { id: data.tutorialIdPrivate },
-        });
-      } else {
-        throw new Error("Server did not return tutorialIdPrivate");
+      setIsUploading(false);
+
+      console.log(`Uploaded video with tutorial ID: ${tutorialIdPrivate}`);
+      if (!tutorialIdPrivate) {
+        throw new Error("No tutorial ID returned from upload");
       }
+      router.replace({
+        pathname: "/Tutorial/[id]",
+        params: { id: tutorialIdPrivate },
+      });
     } catch (e) {
       console.error("Upload error:", e);
       console.log("Upload error details:");
@@ -154,6 +159,7 @@ export default function RecordScreen() {
     } finally {
       setIsUploading(false);
     }
+    return tutorialIdPrivate;
   }
 
   if (!cameraPermission || !microphonePermission) {

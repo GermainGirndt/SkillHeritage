@@ -11,7 +11,7 @@ import {
 import { useEffect, useState, useCallback } from "react";
 import { useRouter, useFocusEffect } from "expo-router";
 import { theme } from "../src/styles/theme";
-import { TutorialsApiClient } from "@/api/tutorial.api.client";
+import { DefaultTutorialsApiClient } from "@/api/tutorial.api.client";
 
 import {
   ITutorialSemanticSearchHit,
@@ -51,7 +51,7 @@ export default function HomeScreen() {
     try {
       if (query.trim() === "") {
         console.log("No search query provided. Fetching all tutorials.");
-        const allData = await TutorialsApiClient.list();
+        const allData = await DefaultTutorialsApiClient.list();
 
         const mappedResults = allData.map((t: any) => ({
           tutorial: t,

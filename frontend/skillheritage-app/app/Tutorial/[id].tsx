@@ -18,7 +18,7 @@ import VideoSection, {
 
 import ProgressBar from "@/src/components/ProgressBar";
 import StepItem from "@/src/components/StepItem";
-import { TutorialsApiClient } from "@/api/tutorial.api.client";
+import { DefaultTutorialsApiClient } from "@/api/tutorial.api.client";
 import env from "@/config/dotenv";
 
 export default function TutorialDetailScreen() {
@@ -38,8 +38,8 @@ export default function TutorialDetailScreen() {
       if (!id) return;
       try {
         // const data = await TutorialsRepository.getById(id as string);
-        console.log(`Fetching tutorial data`);
-        const tutorial = await TutorialsApiClient.getById(id as string);
+        console.log(`Fetching tutorial data for id: ${id}`);
+        const tutorial = await DefaultTutorialsApiClient.getById(id as string);
 
         setTutorial(tutorial);
 
