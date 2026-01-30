@@ -16,8 +16,8 @@ export class TutorialProcessingService {
     private readonly tutorialModel: Model<TutorialDocument>,
     private semanticSearchService: SemanticSearchService,
     private transcriptionService: TranscriptionService,
-    private LLMservice: LLMService
-  ) { }
+    private LLMservice: LLMService,
+  ) {}
 
   /**
    * Fetch a batch of tutorials that are not completed.
@@ -131,10 +131,16 @@ export class TutorialProcessingService {
    * ready_to_transcribe -> ready_for_llm_processing
    */
   private async stepTranscribe(tutorial: TutorialDocument) {
-    var transcription = await this.transcriptionService.transcribe(tutorial.videoGridFsFileId)
-    var stamps = []
+    var transcription = await this.transcriptionService.transcribe(
+      tutorial.videoGridFsFileId,
+    );
+    var stamps = [];
     for (let i = 0; i < transcription.segments.length; i++) {
-      stamps.push({ order: i, timestamp: transcription.segments[i].start, text: transcription.segments[i].text })
+      stamps.push({
+        order: i,
+        timestamp: transcription.segments[i].start,
+        text: transcription.segments[i].text,
+      });
     }
     await this.tutorialModel.updateOne(
       { _id: tutorial._id },
@@ -164,7 +170,9 @@ export class TutorialProcessingService {
     // tutorial._id.toString(),
     // TutorialStatus.READY_FOR_VECTOR_STORE_STORAGE,
     // );
-    const generated = await this.LLMservice.getLLMResponse(tutorial.audioTranscript);
+    const generated = await this.LLMservice.getLLMResponse(
+      tutorial.audioTranscript,
+    );
     await this.tutorialModel.updateOne(
       { _id: tutorial._id },
       {
@@ -180,25 +188,27 @@ export class TutorialProcessingService {
 
   // ready_for_vector_store_storage -> completed
   private async stepVectorStoreStorage(tutorial: TutorialDocument) {
-    // TODO: (Germain)
-    // - call vector store / embeddings service
-    //    - generate embeddings or store in vector store
-    //    - store file_id  from vector store response in tutorial.vectorStoreFileId
-
-    // validate has params needed
-
-    if (!tutorial.id || !tutorial.title || !tutorial.audioTranscript) {
+    if (
+      !tutorial.id ||
+      !tutorial.title ||
+      !tutorial.audioTranscript ||
+      !tutorial.title ||
+      !tutorial.shortDescription ||
+      !tutorial.shortDescription
+    ) {
       throw new Error(
         `Tutorial ${tutorial._id.toString()} is missing required fields for vector store storage. Tutorial data: ${JSON.stringify(tutorial)}`,
       );
     }
 
+    const stringToStore = `Title: ${tutorial.title}\n\nShort Description: ${tutorial.shortDescription}\n\nTranscript:\n${tutorial.audioTranscript}`;
     console.log(
-      `Storing tutorial ${tutorial._id.toString()} transcript in vector store.`,
+      `Tutorial ${tutorial._id.toString()}: Storing String:\n${stringToStore}`,
     );
-    const transcriptBlob = Buffer.from(tutorial.audioTranscript, 'utf-8');
+
+    const stringToStoreBlob = Buffer.from(stringToStore, 'utf-8');
     const transcriptFile = new File(
-      [transcriptBlob],
+      [stringToStoreBlob],
       `${tutorial._id.toString()}-${tutorial.title}-transcript.txt`,
       { type: 'text/plain' },
     );
