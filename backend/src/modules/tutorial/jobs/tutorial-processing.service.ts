@@ -134,6 +134,7 @@ export class TutorialProcessingService {
     var transcription = await this.transcriptionService.transcribe(
       tutorial.videoGridFsFileId,
     );
+  
     var stamps = [];
     for (let i = 0; i < transcription.segments.length; i++) {
       stamps.push({
