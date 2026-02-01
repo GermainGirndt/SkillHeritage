@@ -58,7 +58,7 @@ export class TranscriptionService {
         .on("end", resolve)
         .on("error", reject);
     });
-    const file = await toFile(fs.createReadStream("./audio.wav"),
+    const file = await toFile(fs.createReadStream("./temp/audio.wav"),
       "audio.wav");
     return this.openAIClient.getTimestamps(file)
 
