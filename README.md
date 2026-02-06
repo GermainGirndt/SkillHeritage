@@ -122,9 +122,7 @@ supervisorctl status
 
 ### Using Git
 
+```
 eval "$(ssh-agent -s)"
 ssh-add uberspace-tutorial-htw
-
-```
-
 ```
