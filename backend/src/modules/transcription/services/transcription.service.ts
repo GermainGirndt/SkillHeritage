@@ -25,6 +25,7 @@ export class TranscriptionService {
     });
   }
   async transcribe(id): Promise<TranscriptionResponse> {
+
     const ffmpegPath = require('ffmpeg-static');
     const files = await this.bucket.find({ _id: id }).toArray();
     if (!files.length) {
@@ -46,7 +47,7 @@ export class TranscriptionService {
         'pipe:1'
       ]);
 
-      const python = spawn('python', [
+      const python = spawn('python3.13', [
         path.join(__dirname, '../transcription.py'),
       ]);
 
