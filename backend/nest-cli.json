@@ -8,13 +8,7 @@
       {
         "include": "assets/**/*",
         "outDir": "dist"
-      },
-  
-      {
-        "include": "**/*.py",
-        "outDir": "dist"
       }
-    
     ]
   }
 }
