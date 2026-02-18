@@ -4,10 +4,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { VideoController } from './controllers/video.controller';
-import { InstructionsController } from './controllers/instructions.controller';
-import { TranscriptionController } from './controllers/transcription.controller';
-import { SemanticSearchController } from './modules/semantic-search/semantic-search.controller';
 import { configValidationSchema } from './configValidationSchema';
 import { TutorialsModule } from './modules/tutorial/tutorials.module';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -30,13 +26,7 @@ import { SemanticSearchModule } from './modules/semantic-search/semantic-search.
     SemanticSearchModule,
     ScheduleModule.forRoot(),
   ],
-  controllers: [
-    AppController,
-    VideoController,
-    TranscriptionController,
-    InstructionsController,
-    SemanticSearchController,
-  ],
+  controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}
