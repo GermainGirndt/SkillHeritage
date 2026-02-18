@@ -32,7 +32,7 @@ export class VideoController {
     }),
   )
   uploadVideo(@UploadedFile() file) {
-    console.log('Video received and saved!');
+    console.log('Video received and saved!'); // File already handled by the interceptor
     return { status: 'success' };
   }
 
