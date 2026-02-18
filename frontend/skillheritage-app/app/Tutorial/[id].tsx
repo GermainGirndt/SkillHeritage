@@ -11,15 +11,15 @@ import {
 import { useState, useEffect, useRef } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { theme } from "@/src/styles/theme";
-import ITutorial from "@/models/ITutorial";
-import VideoSection, {
-  VideoSectionHandle,
-} from "@/src/components/VideoSection";
+import ITutorial from "@/interfaces/ITutorial";
 
 import ProgressBar from "@/src/components/ProgressBar";
 import StepItem from "@/src/components/StepItem";
-import { DefaultTutorialsApiClient } from "@/api/tutorial.api.client";
+import VideoSection, {
+  VideoSectionHandle,
+} from "@/src/components/VideoSection";
 import env from "@/config/dotenv";
+import TutorialApiClient from "@/api/TutorialApiClient";
 
 export default function TutorialDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -33,13 +33,14 @@ export default function TutorialDetailScreen() {
   const [activeStepIndex, setActiveStepIndex] = useState(0);
 
   useEffect(() => {
+    // TODO: Gosia: review not exported class
     let timer: NodeJS.Timeout;
     async function loadTutorial() {
       if (!id) return;
       try {
         // const data = await TutorialsRepository.getById(id as string);
         console.log(`Fetching tutorial data for id: ${id}`);
-        const tutorial = await DefaultTutorialsApiClient.getById(id as string);
+        const tutorial = await TutorialApiClient.getById(id as string);
 
         setTutorial(tutorial);
 

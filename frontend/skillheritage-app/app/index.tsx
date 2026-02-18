@@ -11,12 +11,10 @@ import {
 import { useEffect, useState, useCallback } from "react";
 import { useRouter, useFocusEffect } from "expo-router";
 import { theme } from "../src/styles/theme";
-import { DefaultTutorialsApiClient } from "@/api/tutorial.api.client";
+import ITutorialSemanticSearchHit from "@/interfaces/ITutorialSemanticSearchHit";
 
-import {
-  ITutorialSemanticSearchHit,
-  TutorialsSemanticSearchAPIClient,
-} from "@/api/semantic-search.api.client";
+import TutorialApiClient from "@/api/TutorialApiClient";
+import TutorialsSemanticSearchAPIClient from "@/api/SemanticSearchApiClient";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -29,12 +27,12 @@ export default function HomeScreen() {
   console.log("Rendering HomeScreen");
   // executing just once on mount
   useFocusEffect(
-      useCallback(() => {
-        if (search === "") {
-          fetchTutorials("");
-        }
-      }, [search])
-    );
+    useCallback(() => {
+      if (search === "") {
+        fetchTutorials("");
+      }
+    }, [search]),
+  );
 
   useEffect(() => {
     console.log("Feching tutorials effect");
@@ -51,7 +49,7 @@ export default function HomeScreen() {
     try {
       if (query.trim() === "") {
         console.log("No search query provided. Fetching all tutorials.");
-        const allData = await DefaultTutorialsApiClient.list();
+        const allData = await TutorialApiClient.list();
 
         const mappedResults = allData.map((t: any) => ({
           tutorial: t,

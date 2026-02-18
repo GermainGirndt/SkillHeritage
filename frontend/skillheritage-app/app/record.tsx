@@ -1,3 +1,4 @@
+// TODO: move to a separate file
 // This screen handles video recording for both Web and Android platforms.
 import {
   View,
@@ -17,7 +18,7 @@ import {
 } from "expo-camera";
 import { theme } from "../src/styles/theme";
 import { API } from "../src/services/api";
-import { DefaultTutorialsApiClient } from "@/api/tutorial.api.client";
+import { DefaultTutorialsApiClient } from "@/api/TutorialApiClient";
 
 let mediaRecorder: any = null;
 let videoChunks: any[] = [];
