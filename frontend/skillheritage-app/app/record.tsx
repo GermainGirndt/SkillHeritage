@@ -1,4 +1,4 @@
-// TODO: move to a separate file
+// TODO: Gosia:move to a separate file
 // This screen handles video recording for both Web and Android platforms.
 import {
   View,
