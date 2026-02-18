@@ -1,3 +1,6 @@
+// TODO: Gosia: You have another theme file defined in the path below
+// SkillHeritage/frontend/skillheritage-app/constants/theme.ts
+// Should we merge them?
 export const theme = {
   colors: {
     bg: '#121212',

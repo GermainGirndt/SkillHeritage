@@ -4,6 +4,7 @@ import { type ComponentProps } from 'react';
 
 type Props = Omit<ComponentProps<typeof Link>, 'href'> & { href: Href & string };
 
+// TODO: Gosia: is it used?
 export function ExternalLink({ href, ...rest }: Props) {
   return (
     <Link

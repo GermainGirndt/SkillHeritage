@@ -8,6 +8,7 @@ export type ThemedTextProps = TextProps & {
   type?: 'default' | 'title' | 'defaultSemiBold' | 'subtitle' | 'link';
 };
 
+// TODO: Gosia: is it used?
 export function ThemedText({
   style,
   lightColor,

@@ -1,5 +1,6 @@
 import Animated from 'react-native-reanimated';
 
+// TODO: Gosia: is it used?
 export function HelloWave() {
   return (
     <Animated.Text
