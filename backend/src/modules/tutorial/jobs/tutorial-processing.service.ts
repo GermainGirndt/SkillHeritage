@@ -128,7 +128,7 @@ export class TutorialProcessingService {
    * ready_to_transcribe -> ready_for_llm_processing
    */
   private async stepTranscribe(tutorial: TutorialDocument) {
-    var transcription = await this.transcriptionService.transcribe(
+    var transcription = await this.transcriptionService.generateTranscriptionFromFileId(
       tutorial.videoGridFsFileId,
     );
     var stamps = [];
@@ -166,7 +166,7 @@ export class TutorialProcessingService {
     // tutorial._id.toString(),
     // TutorialStatus.READY_FOR_VECTOR_STORE_STORAGE,
     // );
-    const generated = await this.LLMservice.getLLMResponse(
+    const generated = await this.LLMservice.generateTutorialContentFromTranscription(
       tutorial.audioTranscript,
     );
     await this.tutorialModel.updateOne(
