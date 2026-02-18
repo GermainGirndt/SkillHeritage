@@ -7,8 +7,11 @@
 GitHub:
 https://github.com/GermainGirndt/SkillHeritage
 
-Trello:
+Trello – Project Management:
 https://trello.com/b/nBguKruK/industrial-ux-engineering-skillheritage
+
+Trello – Empathie-Karte / Empathy Map:
+https://trello.com/b/OCDUJtJ7/industrial-ux-engineering-persona
 
 ## Project Architecture & Workflow
 

@@ -1,72 +1,103 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { OpenAIClient } from 'src/shared/providers/openai.client';
-import { Connection, Model, Types } from 'mongoose';
-import { InjectConnection, InjectModel } from '@nestjs/mongoose';
-import {
-  Tutorial,
-  TutorialDocument,
-} from 'src/modules/tutorial/schemas/tutorial.schema';
+import { Connection, Types } from 'mongoose';
+import { InjectConnection } from '@nestjs/mongoose';
 import { GridFSBucket } from 'mongodb';
-import { once } from 'events';
-import { TranscriptionSegment } from 'openai/resources/audio/transcriptions';
-import { toFile } from 'openai';
-import { PassThrough } from 'stream';
+import { spawn } from 'child_process';
+import * as path from 'path';
 
 interface TranscriptionResponse {
   text: string;
-  segments: TranscriptionSegment[];
+  segments: any[];
 }
 
 @Injectable()
 export class TranscriptionService {
-  bucket: GridFSBucket;
+  bucket: GridFSBucket
   constructor(
-    @InjectConnection() private readonly connection: Connection,
-    private readonly openAIClient: OpenAIClient,
+    @InjectConnection() private readonly connection: Connection, private readonly openAIClient: OpenAIClient
   ) {
     this.bucket = new GridFSBucket(this.connection.db, {
       bucketName: 'tutorialVideos',
     });
   }
-
-  async generateTranscriptionFromFileId(id:Types.ObjectId): Promise<TranscriptionResponse> {
-    const fs = require('fs');
-    const ffmpeg = require('fluent-ffmpeg');
+  async generateTranscriptionFromFileId(id: Types.ObjectId): Promise<TranscriptionResponse> {
     const ffmpegPath = require('ffmpeg-static');
-
-    ffmpeg.setFfmpegPath(ffmpegPath);
     const files = await this.bucket.find({ _id: id }).toArray();
     if (!files.length) {
       throw new NotFoundException('Video file not found in GridFS');
     }
 
     // Stream from GridFS to client
-    const writeStream = fs.createWriteStream('./video.mp4');
-    const gridStream = this.bucket.openDownloadStream(id);
+    return new Promise((resolve, reject) => {
 
-    gridStream.pipe(writeStream);
+      const videoStream = this.bucket.openDownloadStream(id);
 
-    await once(writeStream, 'finish');
+      const ffmpeg = spawn(ffmpegPath!, [
+        '-i', 'pipe:0',
+        '-vn',
+        '-acodec', 'pcm_s16le',
+        '-ar', '16000',
+        '-ac', '1',
+        '-f', 'wav',
+        'pipe:1'
+      ]);
 
-    await new Promise((resolve, reject) => {
-      ffmpeg('./video.mp4')
-        .noVideo()
-        .audioCodec('pcm_s16le')
-        .audioFrequency(16000)
-        .audioChannels(1)
-        .format('wav')
-        .save('./temp/audio.wav')
-        .on('end', resolve)
-        .on('error', reject);
+      const python = spawn('python', [
+        path.join(__dirname, '../transcription.py'),
+      ]);
+
+
+
+      let output = '';
+      let error = '';
+
+      videoStream.on('error', (err) => {
+        ffmpeg.stdin.destroy(err);
+        reject(new Error('GridFS stream error: ' + err.message));
+      });
+
+      ffmpeg.stdin.on('error', (err: NodeJS.ErrnoException) => {
+        if (err.code !== 'EPIPE') reject(new Error('FFmpeg stdin error: ' + err.message));
+      });
+
+      ffmpeg.stdout.on('error', (err) => reject(new Error('FFmpeg stdout error: ' + err.message)));
+      ffmpeg.stderr.on('data', (data) => console.error('FFmpeg stderr:', data.toString()));
+      ffmpeg.on('error', (err) => reject(new Error('FFmpeg process error: ' + err.message)));
+
+      python.stdin.on('error', (err: NodeJS.ErrnoException) => {
+        if (err.code !== 'EPIPE') reject(new Error('Python stdin error: ' + err.message));
+      });
+
+      python.stdout.on('error', (err) => reject(new Error('Python stdout error: ' + err.message)));
+      python.stderr.on('data', (data) => console.error('Python stderr:', data.toString()));
+      python.on('error', (err) => reject(new Error('Python process error: ' + err.message)));
+
+
+      // Pipe streams
+      videoStream.pipe(ffmpeg.stdin);
+      ffmpeg.stdout.pipe(python.stdin);
+
+      python.stdout.on('data', (data) => {
+        output += data.toString();
+      });
+
+      python.stderr.on('data', (data) => {
+        error += data.toString();
+      });
+
+      python.on('close', (code) => {
+        if (code !== 0) {
+          return reject(new Error(error));
+        }
+
+        try {
+          resolve(JSON.parse(output));
+        } catch (e) {
+          reject(e);
+        }
+      });
     });
-    const file = await toFile(
-      fs.createReadStream('./temp/audio.wav'),
-      'audio.wav',
-    );
-    return this.openAIClient.getTimestamps(file);
   }
 }

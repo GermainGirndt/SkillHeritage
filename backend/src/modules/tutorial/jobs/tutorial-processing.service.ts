@@ -17,7 +17,7 @@ export class TutorialProcessingService {
     private semanticSearchService: SemanticSearchService,
     private transcriptionService: TranscriptionService,
     private LLMservice: LLMService,
-  ) {}
+  ) { }
 
   /**
    * Fetch a batch of tutorials that are not completed.
@@ -51,6 +51,10 @@ export class TutorialProcessingService {
       { $inc: { processingAttempts: 1 } },
     );
 
+
+    var recovered = false;
+
+
     this.logger.log(`Processing tutorial=${id} status=${status}`);
 
     try {
@@ -73,6 +77,7 @@ export class TutorialProcessingService {
 
         case TutorialStatus.FAILED:
           await this.stepFailureRecovery(tutorial);
+          recovered = true;
           break;
 
         case TutorialStatus.COMPLETED:
@@ -87,11 +92,17 @@ export class TutorialProcessingService {
           break;
       }
 
-      // if success, resets attempts counter
-      await this.tutorialModel.updateOne(
-        { _id: tutorial._id },
-        { $set: { processingAttempts: 0 } },
-      );
+      if (!recovered) {
+        // if success, resets attempts counter
+        await this.tutorialModel.updateOne(
+          { _id: tutorial._id },
+          { $set: { processingAttempts: 0 } },
+        );
+      }else{
+        recovered = false;
+      }
+
+
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       this.logger.error(
