@@ -70,7 +70,7 @@
 
 ---
 
-### MH-6 – Usability [TODO]
+### MH-6 – Usability
 
 - The app should be **easy to use** and allow that even new users to effectively interact with it and archieve maximal performance.
 - **Acceptance Criteria:**
