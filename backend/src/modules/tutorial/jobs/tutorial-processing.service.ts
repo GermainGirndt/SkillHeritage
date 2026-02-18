@@ -118,9 +118,6 @@ export class TutorialProcessingService {
    * uploaded -> ready_to_transcribe
    */
   private async stepUploaded(tutorial: TutorialDocument) {
-    // TODO:
-    // - preprocess video if needed(e.g. for streaming)
-
     await this.setStatus(
       tutorial._id.toString(),
       TutorialStatus.READY_TO_TRANSCRIBE,
@@ -158,7 +155,6 @@ export class TutorialProcessingService {
    * ready_for_llm_processing -> ready_for_vector_store_storage
    */
   private async stepLLMProcessing(tutorial: TutorialDocument) {
-    // TODO: (Katharina)
     // - call LLM service
     //    - generate title
     //    - generate shortDescription

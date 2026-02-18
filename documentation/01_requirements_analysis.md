@@ -77,7 +77,6 @@
   - Predictable behaviours
   - Familiar patterns
   - Synthesizability (Change is reflected)
-  - Generalizability [TODO]
   - Consistency
 
 > 💬 _Why?_ Workers without extensive technological knowledge should be able to use the app without any problems.
@@ -127,6 +126,5 @@
 ## 🚫 Won’t-Have (for Initial Release)
 
 1. **iOS support**
-
    - No app for iPhones.
      > 💬 _Why?_ Simplifies the developement.
