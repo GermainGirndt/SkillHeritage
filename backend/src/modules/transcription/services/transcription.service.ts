@@ -25,9 +25,6 @@ interface TranscriptionResponse {
 export class TranscriptionService {
   bucket: GridFSBucket;
   constructor(
-    // TODO: Katharina: do we need the tutorialModel?
-    @InjectModel(Tutorial.name)
-    private readonly tutorialModel: Model<TutorialDocument>,
     @InjectConnection() private readonly connection: Connection,
     private readonly openAIClient: OpenAIClient,
   ) {
@@ -36,9 +33,7 @@ export class TranscriptionService {
     });
   }
 
-  // TODO: Katharina: is there a better naming? Maybe something like "generateTranscriptionFromFileId"?
-  // TODO: Katharina: validate id input? E.g. check if it's a valid ObjectId, check if it's not empty, etc.?
-  async transcribe(id): Promise<TranscriptionResponse> {
+  async generateTranscriptionFromFileId(id:Types.ObjectId): Promise<TranscriptionResponse> {
     const fs = require('fs');
     const ffmpeg = require('fluent-ffmpeg');
     const ffmpegPath = require('ffmpeg-static');
