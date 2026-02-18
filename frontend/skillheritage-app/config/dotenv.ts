@@ -67,4 +67,6 @@ const env: EnvironmentVariables = {
   USE_DUMMY_API_CLIENT,
 };
 
+console.log("Environment Variables:", env);
+
 export default env;
