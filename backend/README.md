@@ -33,7 +33,7 @@ $ npm install
 ```
 
 Python 3.13.0
-python -m pip install whisper
+python -m pip install -U openai-whisper==20250625
 
 ## Setup
 
