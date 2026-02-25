@@ -198,10 +198,9 @@ export class TutorialProcessingService {
     if (
       !tutorial.id ||
       !tutorial.title ||
-      !tutorial.audioTranscript ||
+      !tutorial.audioTranscript && tutorial.audioTranscript != "" ||
       !tutorial.title ||
-      !tutorial.shortDescription ||
-      !tutorial.shortDescription
+      !tutorial.shortDescription 
     ) {
       throw new Error(
         `Tutorial ${tutorial._id.toString()} is missing required fields for vector store storage. Tutorial data: ${JSON.stringify(tutorial)}`,
