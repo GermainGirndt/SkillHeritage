@@ -65,6 +65,7 @@ export default function HomeScreen() {
       }
     } catch (error) {
       console.error("Search error:", error);
+      window.alert("An error occurred while searching for tutorials.");
       setTutorialSearchHits([]);
     } finally {
       setLoading(false);
