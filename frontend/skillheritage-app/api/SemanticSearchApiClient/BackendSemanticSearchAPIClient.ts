@@ -1,9 +1,9 @@
-import Tutorial from "@/interfaces/ITutorial";
+import Tutorial from "@/src/interfaces/ITutorial";
 import env from "@/config/dotenv";
 import axios from "axios";
-import ITutorialSemanticSearchHit from "@/interfaces/ITutorialSemanticSearchHit";
+import ITutorialSemanticSearchHit from "@/src/interfaces/ITutorialSemanticSearchHit";
 
-import ITutorialsSemanticSearchAPIClient from "@/interfaces/ITutorialsSemanticSearchAPIClient";
+import ITutorialsSemanticSearchAPIClient from "@/src/interfaces/ITutorialsSemanticSearchAPIClient";
 
 class BackendSemanticSearchAPIClient implements ITutorialsSemanticSearchAPIClient {
   private readonly baseUrl = `${env.DEFAULT_BACKEND_API_BASE_URL}/semantic-search/tutorials`;

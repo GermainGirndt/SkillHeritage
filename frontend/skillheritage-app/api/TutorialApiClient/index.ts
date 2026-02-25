@@ -1,6 +1,6 @@
 import env from "@/config/dotenv";
 
-import ITutorialApiClient from "@/interfaces/ITutorialApiClient";
+import ITutorialApiClient from "@/src/interfaces/ITutorialApiClient";
 import DummyTutorialApiClient from "./DummyTutorialApiClient";
 import BackendTutorialApiClient from "./BackendTutorialApiClient";
 

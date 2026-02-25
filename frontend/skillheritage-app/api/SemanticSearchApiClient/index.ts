@@ -1,5 +1,5 @@
 import env from "@/config/dotenv";
-import ITutorialsSemanticSearchAPIClient from "@/interfaces/ITutorialsSemanticSearchAPIClient";
+import ITutorialsSemanticSearchAPIClient from "@/src/interfaces/ITutorialsSemanticSearchAPIClient";
 import DummyTutorialsSemanticSearchAPIClient from "./DummyTutorialsSemanticSearchAPIClient";
 import BackendSemanticSearchAPIClient from "./BackendSemanticSearchAPIClient";
 

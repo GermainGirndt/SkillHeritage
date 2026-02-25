@@ -1,4 +1,4 @@
-import ITutorial from "@/interfaces/ITutorial";
+import ITutorial from "@/src/interfaces/ITutorial";
 
 interface IUploadVideoParams {
   uri: string;

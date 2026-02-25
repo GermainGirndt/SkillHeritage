@@ -11,7 +11,7 @@ import {
 import { useEffect, useState, useCallback } from "react";
 import { useRouter, useFocusEffect } from "expo-router";
 import { theme } from "../src/styles/theme";
-import ITutorialSemanticSearchHit from "@/interfaces/ITutorialSemanticSearchHit";
+import ITutorialSemanticSearchHit from "@/src/interfaces/ITutorialSemanticSearchHit";
 
 import TutorialApiClient from "@/api/TutorialApiClient";
 import TutorialsSemanticSearchAPIClient from "@/api/SemanticSearchApiClient";
