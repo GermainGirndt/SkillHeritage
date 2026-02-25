@@ -48,8 +48,6 @@ export class TranscriptionService {
         path.join(__dirname, '../transcription.py'),
       ]);
 
-
-
       let output = '';
       let error = '';
 
