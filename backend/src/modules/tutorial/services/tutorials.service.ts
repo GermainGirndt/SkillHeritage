@@ -115,8 +115,7 @@ export class TutorialsService {
     const detected = await fileTypeFromBuffer(file.buffer);
     const detectedMime = (detected?.mime || '').toLowerCase();
 
-    // You can allow more inputs, since we transcode.
-    // Still reject obvious non-video.
+    // Allow more inputs, since we transcode.
     if (detectedMime && !detectedMime.startsWith('video/')) {
       throw new BadRequestException(
         `Unsupported upload type (detected "${detectedMime}"). Please upload a video file.`,
@@ -124,37 +123,60 @@ export class TutorialsService {
     }
 
     // 1) Standardize to MP4(H.264/AAC)+faststart
-    const mp4Buffer = await this.transcodeToMp4Faststart(file.buffer);
+    let mp4Buffer: Buffer;
+    try {
+      mp4Buffer = await this.transcodeToMp4Faststart(file.buffer);
+    } catch (error) {
+      console.error(`Video transcoding failed: ${error}`);
+      throw error instanceof BadRequestException ||
+        error instanceof InternalServerErrorException
+        ? error
+        : new InternalServerErrorException('Video transcoding failed');
+    }
 
     // 2) Stable filename: always mp4 now
     const uniqueFilename = `tutorial-${uuidv4()}.mp4`;
     const contentTypeToStore = 'video/mp4';
 
     // 3) Store in GridFS (contentType set on the file doc!)
-    const gridFsFileId = await this.uploadBufferToGridFS({
-      buffer: mp4Buffer,
-      filename: uniqueFilename,
-      contentType: contentTypeToStore,
-      metadata: {
-        originalName,
-        uploadedAt: new Date().toISOString(),
-        clientMimeType: (file.mimetype || '').toLowerCase(),
-        detectedMime,
-        standardized: true,
-        videoCodecTarget: 'h264',
-        audioCodecTarget: 'aac',
-        faststart: true,
-      },
-    });
+    let gridFsFileId: Types.ObjectId;
+    try {
+      gridFsFileId = await this.uploadBufferToGridFS({
+        buffer: mp4Buffer,
+        filename: uniqueFilename,
+        contentType: contentTypeToStore,
+        metadata: {
+          originalName,
+          uploadedAt: new Date().toISOString(),
+          clientMimeType: (file.mimetype || '').toLowerCase(),
+          detectedMime,
+          standardized: true,
+          videoCodecTarget: 'h264',
+          audioCodecTarget: 'aac',
+          faststart: true,
+        },
+      });
+    } catch (error) {
+      console.error(`Failed to upload video to GridFS: ${error}`);
+      throw new InternalServerErrorException('Failed to store video file');
+    }
 
     // 4) Create tutorial doc linked to GridFS file
-    const created = await this.tutorialModel.create({
-      videoGridFsFileId: gridFsFileId,
-      videoFileName: uniqueFilename,
-      videoOriginalFileName: originalName,
-      videoMimeType: contentTypeToStore,
-      processingStatus: 'uploaded',
-    });
+    let created: TutorialDocument;
+    try {
+      created = await this.tutorialModel.create({
+        videoGridFsFileId: gridFsFileId,
+        videoFileName: uniqueFilename,
+        videoOriginalFileName: originalName,
+        videoMimeType: contentTypeToStore,
+        processingStatus: 'uploaded',
+      });
+    } catch (error) {
+      console.error(`Failed to create tutorial document: ${error}`);
+      throw new InternalServerErrorException(
+        'Failed to create tutorial document',
+      );
+    }
 
     return {
       tutorialId: created.id,
