@@ -9,7 +9,7 @@ import * as path from 'path';
 
 interface TranscriptionResponse {
   text: string;
-  segments: any[];
+  segments: {start:string, end:string, text:string}[];
 }
 
 @Injectable()
