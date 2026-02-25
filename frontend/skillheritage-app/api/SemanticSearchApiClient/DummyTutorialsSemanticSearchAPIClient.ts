@@ -1,6 +1,6 @@
-import ITutorialSemanticSearchHit from "@/interfaces/ITutorialSemanticSearchHit";
+import ITutorialSemanticSearchHit from "@/src/interfaces/ITutorialSemanticSearchHit";
 import DummyTutorialApiClient from "../TutorialApiClient/DummyTutorialApiClient";
-import ITutorialsSemanticSearchAPIClient from "@/interfaces/ITutorialsSemanticSearchAPIClient";
+import ITutorialsSemanticSearchAPIClient from "@/src/interfaces/ITutorialsSemanticSearchAPIClient";
 
 class DummyTutorialsSemanticSearchAPIClient implements ITutorialsSemanticSearchAPIClient {
   private tutorialApiClient: DummyTutorialApiClient;

@@ -1,11 +1,11 @@
-import ITutorial from "@/interfaces/ITutorial";
+import ITutorial from "@/src/interfaces/ITutorial";
 import env from "@/config/dotenv";
 import axios from "axios";
 import { API } from "@/src/services/api";
 import { Platform } from "react-native";
 import ITutorialApiClient, {
   IUploadVideoParams,
-} from "@/interfaces/ITutorialApiClient";
+} from "@/src/interfaces/ITutorialApiClient";
 
 class BackendTutorialApiClient implements ITutorialApiClient {
   private readonly baseUrl = `${env.DEFAULT_BACKEND_API_BASE_URL}/tutorials`;

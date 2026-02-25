@@ -11,7 +11,7 @@ import {
 import { useState, useEffect, useRef } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { theme } from "@/src/styles/theme";
-import ITutorial from "@/interfaces/ITutorial";
+import ITutorial from "@/src/interfaces/ITutorial";
 
 import ProgressBar from "@/src/components/ProgressBar";
 import StepItem from "@/src/components/StepItem";

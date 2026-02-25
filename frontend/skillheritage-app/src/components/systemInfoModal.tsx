@@ -1,7 +1,7 @@
 // This component displays technical and functional information about the SkillHeritage system.
 import { View, Text, StyleSheet } from "react-native";
 import { Link } from "expo-router";
-import { theme } from "../src/styles/theme";
+import { theme } from "../styles/theme";
 
 export default function SystemInfoModal() {
   return (

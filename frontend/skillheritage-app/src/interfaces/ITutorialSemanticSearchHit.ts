@@ -1,4 +1,4 @@
-import ITutorial from "@/interfaces/ITutorial";
+import ITutorial from "@/src/interfaces/ITutorial";
 
 /**
  * A single semantic-search hit. Keep this lightweight for list rendering.

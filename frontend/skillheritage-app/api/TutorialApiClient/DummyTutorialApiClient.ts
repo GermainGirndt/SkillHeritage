@@ -1,7 +1,7 @@
 import ITutorialApiClient, {
   IUploadVideoParams,
-} from "@/interfaces/ITutorialApiClient";
-import ITutorial from "@/interfaces/ITutorial";
+} from "@/src/interfaces/ITutorialApiClient";
+import ITutorial from "@/src/interfaces/ITutorial";
 
 /**
  * Dummy Tutorial repository – use for mock test only.
