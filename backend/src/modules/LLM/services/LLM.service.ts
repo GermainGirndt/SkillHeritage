@@ -1,15 +1,9 @@
 import {
-  BadRequestException,
   Injectable,
-  NotFoundException,
 } from '@nestjs/common';
 import { OpenAIClient } from 'src/shared/providers/openai.client';
-import { Connection, Model, Types } from 'mongoose';
-import { InjectConnection, InjectModel } from '@nestjs/mongoose';
-import {
-  Tutorial,
-  TutorialDocument,
-} from 'src/modules/tutorial/schemas/tutorial.schema';
+import { Connection } from 'mongoose';
+import { InjectConnection } from '@nestjs/mongoose';
 import { GridFSBucket } from 'mongodb';
 
 interface LLMResponse {
