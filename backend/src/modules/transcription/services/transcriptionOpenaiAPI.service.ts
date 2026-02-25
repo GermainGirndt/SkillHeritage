@@ -18,14 +18,13 @@ export class TranscriptionOpenaiAPIService {
   bucket: GridFSBucket
   constructor(
     @InjectModel(Tutorial.name)
-    private readonly tutorialModel: Model<TutorialDocument>,
     @InjectConnection() private readonly connection: Connection, private readonly openAIClient: OpenAIClient
   ) {
     this.bucket = new GridFSBucket(this.connection.db, {
       bucketName: 'tutorialVideos',
     });
   }
-  async transcribe(id):Promise<TranscriptionResponse> {
+  async generateTranscriptionFromFileId(id: Types.ObjectId):Promise<TranscriptionResponse> {
 
     const files = await this.bucket.find({ _id: id }).toArray();
     if (!files.length) {
