@@ -10,11 +10,11 @@ import {
 } from "react-native";
 import { useEffect, useState, useCallback } from "react";
 import { useRouter, useFocusEffect } from "expo-router";
-import { theme } from "../src/styles/theme";
+import { theme } from "@/src/styles/theme";
 import ITutorialSemanticSearchHit from "@/src/interfaces/ITutorialSemanticSearchHit";
 
-import TutorialApiClient from "@/api/TutorialApiClient";
-import TutorialsSemanticSearchAPIClient from "@/api/SemanticSearchApiClient";
+import TutorialApiClient from "@/src/api/TutorialApiClient";
+import TutorialsSemanticSearchAPIClient from "@/src/api/SemanticSearchApiClient";
 
 export default function HomeScreen() {
   const router = useRouter();

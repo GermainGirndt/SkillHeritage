@@ -2,7 +2,7 @@
 import { View, Text, StyleSheet, Pressable, ActivityIndicator } from "react-native";
 import { useEffect } from "react";
 import { CameraView, useCameraPermissions, useMicrophonePermissions } from "expo-camera";
-import { useVideoRecording } from "../src/hooks/useVideoRecording";
+import { useVideoRecording } from "@/src/hooks/useVideoRecording";
 
 export default function RecordScreen() {
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
