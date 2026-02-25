@@ -1,7 +1,7 @@
 import ITutorial from "@/src/interfaces/ITutorial";
 import env from "@/config/dotenv";
 import axios from "axios";
-import { API } from "@/src/services/api";
+
 import { Platform } from "react-native";
 import ITutorialApiClient, {
   IUploadVideoParams,
@@ -112,8 +112,8 @@ class BackendTutorialApiClient implements ITutorialApiClient {
         ? undefined
         : { headers: { "Content-Type": "multipart/form-data" } };
 
-    console.log("Posting multipart to:", API.uploadVideo);
-    const response = await axios.post(API.uploadVideo, formData, config);
+    console.log(`Posting multipart to: ${this.baseUrl}`);
+    const response = await axios.post(this.baseUrl, formData, config);
 
     const tutorialIdPrivate = response?.data?.tutorialIdPrivate;
 
