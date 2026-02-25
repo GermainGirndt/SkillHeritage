@@ -2,19 +2,11 @@ import {
   BadRequestException,
   Controller,
   Get,
-  InternalServerErrorException,
-  Post,
   Query,
-  Req,
-  Res,
-  UploadedFile,
-  UseInterceptors,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
 import { SemanticSearchService } from './services/semantic-search.service';
 import { TutorialsService } from '../tutorial/services/tutorials.service';
 import { Tutorial } from '../tutorial/schemas/tutorial.schema';
-import { FileInterceptor } from '@nestjs/platform-express';
 
 interface ISemanticSearchHit {
   fileId: string;
